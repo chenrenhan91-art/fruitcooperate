@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水果宇宙 | 全球化水果IP生态平台合作招募</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide 图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 引入 html2canvas 用于前端生成海报图片 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans SC"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            500: '#f97316', 
+                            600: '#ea580c',
+                            900: '#7c2d12',
+                        },
+                        fruit: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981', 
+                            600: '#059669',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #ea580c 0%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-bg {
+            background: radial-gradient(circle at top right, #fff7ed 0%, #f0fdf4 100%);
+        }
+        /* 隐藏滚动条但保留滚动功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-[#fafafa] text-gray-800 antialiased selection:bg-brand-500 selection:text-white relative overflow-x-hidden">
+
+    <!-- 海报生成隐藏区域 (不可见但会被 html2canvas 渲染) -->
+    <div id="poster-export-zone" class="fixed top-[-9999px] left-[-9999px] z-[-1]">
+        <!-- 海报卡片本体 (800px 宽，适合手机查看的高清比例) -->
+        <div id="poster-card" class="w-[800px] bg-gradient-to-br from-gray-900 via-gray-800 to-brand-900 text-white p-14 rounded-[3rem] shadow-2xl relative overflow-hidden">
+            <!-- 装饰光晕 -->
+            <div class="absolute -top-40 -right-40 w-[500px] h-[500px] bg-brand-500 rounded-full mix-blend-screen filter blur-[100px] opacity-60"></div>
+            <div class="absolute -bottom-40 -left-40 w-[400px] h-[400px] bg-fruit-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
+            
+            <!-- 头部 Logo -->
+            <div class="flex items-center gap-4 mb-12 relative z-10">
+                <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+                    <i data-lucide="grape" class="w-10 h-10 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-4xl font-black tracking-widest">水果宇宙</h2>
+                    <p class="text-brand-300 font-bold tracking-widest text-sm mt-1">GLOBAL FRUIT IP PLATFORM</p>
+                </div>
+                <div class="ml-auto px-6 py-2 bg-gradient-to-r from-brand-500 to-rose-500 rounded-full text-lg font-black shadow-lg">
+                    VIP 专属方案
+                </div>
+            </div>
+
+            <!-- 用户档案区 -->
+            <div class="bg-white/10 backdrop-blur-xl rounded-[2rem] p-8 mb-10 border border-white/20 relative z-10 shadow-inner">
+                <div class="flex items-center gap-3 mb-6 border-b border-white/20 pb-4">
+                    <i data-lucide="user-check" class="w-6 h-6 text-brand-400"></i>
+                    <h3 class="text-2xl font-bold text-brand-300">合伙人认证档案</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-y-5 gap-x-8 text-lg">
+                    <p class="text-gray-400 flex flex-col gap-1">您的称呼<span id="p-name" class="text-white font-bold text-2xl">--</span></p>
+                    <p class="text-gray-400 flex flex-col gap-1">手机/微信<span id="p-phone" class="text-white font-bold text-2xl">--</span></p>
+                    <p class="text-gray-400 flex flex-col gap-1">公司名称<span id="p-company" class="text-white font-bold text-2xl">--</span></p>
+                    <p class="text-gray-400 flex flex-col gap-1">您的职位<span id="p-position" class="text-white font-bold text-2xl">--</span></p>
+                    <p class="text-gray-400 flex flex-col gap-1">所在城市<span id="p-city" class="text-white font-bold text-2xl">--</span></p>
+                    <p class="text-gray-400 flex flex-col gap-1">计划预算<span id="p-budget" class="text-brand-400 font-black text-2xl">--</span></p>
+                    <div class="col-span-2 bg-white/5 rounded-xl p-4 border border-white/10 mt-1">
+                        <p class="text-gray-400 text-sm mb-2">期望合作内容</p>
+                        <p id="p-content" class="text-white font-medium text-lg leading-relaxed break-words">--</p>
+                    </div>
+                    <p class="text-gray-400 flex flex-col gap-1 col-span-2 mt-2 bg-gray-800/50 p-4 rounded-xl border border-gray-700">当前角色画像<span id="p-role" class="text-white font-bold text-xl">--</span></p>
+                </div>
+            </div>
+
+            <!-- 匹配结果区 -->
+            <div class="bg-white rounded-[2rem] p-10 text-gray-900 shadow-2xl relative z-10">
+                <div class="absolute -top-6 -right-6 w-16 h-16 bg-brand-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-brand-500/50 border-4 border-white">
+                    <i data-lucide="check" class="w-8 h-8"></i>
+                </div>
+                <h4 id="p-mode-name" class="text-4xl font-black mb-6 tracking-tight">--</h4>
+                <p id="p-mode-desc" class="text-gray-600 font-medium leading-relaxed mb-8 text-xl">--</p>
+                <div id="p-mode-tags" class="flex flex-wrap gap-3">
+                    <!-- 动态注入标签 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /海报生成隐藏区域 -->
+
+    <!-- 悬浮胶囊导航栏 -->
+    <div class="fixed w-full z-50 transition-all duration-300 px-4 sm:px-6 lg:px-8 top-6 pointer-events-none" id="navbar-container">
+        <nav class="max-w-6xl mx-auto bg-white/90 backdrop-blur-xl shadow-sm border border-gray-100/50 rounded-full transition-all duration-300 pointer-events-auto" id="navbar">
+            <div class="flex justify-between items-center h-16 px-6">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="window.scrollTo(0,0)">
+                    <div class="bg-gradient-to-br from-brand-500 to-rose-400 text-white p-2 rounded-full group-hover:rotate-12 transition-transform duration-300 shadow-md">
+                        <i data-lucide="grape" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-black text-xl tracking-tight text-gray-900">水果宇宙</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="text-gray-600 hover:text-brand-600 font-bold transition">核心优势</a>
+                    <a href="#support" class="text-gray-600 hover:text-brand-600 font-bold transition">支持体系</a>
+                    <a href="#match" class="text-brand-600 font-black transition">合作匹配</a>
+                </div>
+                <div class="hidden md:flex">
+                    <a href="#match" class="bg-gray-900 hover:bg-brand-500 text-white px-6 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-brand-500/40 flex items-center gap-2 transform hover:scale-105 active:scale-95">
+                        立即匹配 <i data-lucide="zap" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Hero 首屏 -->
+    <section class="relative pt-44 pb-20 lg:pt-56 lg:pb-32 overflow-hidden hero-bg rounded-b-[3rem] lg:rounded-b-[5rem] shadow-sm">
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-10 left-10 w-96 h-96 bg-brand-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+            <div class="absolute top-20 right-10 w-96 h-96 bg-fruit-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+            <div class="absolute -bottom-8 left-1/2 w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 backdrop-blur-sm text-gray-800 font-bold text-sm mb-8 shadow-sm border border-white/50 transform hover:scale-105 transition cursor-default">
+                <span class="flex h-2.5 w-2.5 rounded-full bg-fruit-500 animate-pulse"></span>
+                寻找志同道合的城市同行者
+            </div>
+            <h1 class="text-6xl md:text-8xl font-black text-gray-900 tracking-tight mb-8 leading-[1.1]">
+                发掘 <span class="gradient-text">水果宇宙</span><br/>的无限商机
+            </h1>
+            <p class="mt-6 max-w-2xl text-xl text-gray-600 mx-auto mb-12 leading-relaxed font-medium">
+                集IP授权、运营策划、AI赋能于一体。<br/>全链路赋能，助您实现低风险、多渠道盈利。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-5">
+                <a href="#match" class="px-8 py-4 text-lg font-black rounded-full text-white bg-brand-500 hover:bg-brand-600 shadow-xl shadow-brand-500/40 transition-all transform hover:-translate-y-1 hover:scale-105 active:scale-95 flex justify-center items-center gap-2">
+                    智能匹配合作方案 <i data-lucide="arrow-down" class="w-5 h-5 animate-bounce"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心优势 -->
+    <section id="about" class="py-24 bg-[#fafafa]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-6">为什么选择水果宇宙？</h2>
+                <div class="w-24 h-2 bg-brand-500 mx-auto rounded-full"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-fruit-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-fruit-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-fruit-500/10">
+                    <div class="w-20 h-20 mx-auto bg-fruit-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300">
+                        <i data-lucide="crown" class="w-10 h-10 text-fruit-600"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">强IP品牌力</h3>
+                    <p class="text-sm text-gray-500 font-medium leading-relaxed">独特潮酷IP形象<br>自带社交属性与高溢价</p>
+                </div>
+                
+                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-blue-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-blue-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10">
+                    <div class="w-20 h-20 mx-auto bg-blue-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                        <i data-lucide="bot" class="w-10 h-10 text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">AI数字化运营</h3>
+                    <p class="text-sm text-gray-500 font-medium leading-relaxed">智能选品与库存预警<br>科学决策降本增效</p>
+                </div>
+
+                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-rose-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-rose-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-rose-500/10">
+                    <div class="w-20 h-20 mx-auto bg-rose-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300">
+                        <i data-lucide="globe-2" class="w-10 h-10 text-rose-600"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">全域流量支持</h3>
+                    <p class="text-sm text-gray-500 font-medium leading-relaxed">线上线下多渠道矩阵<br>全方位引流获客</p>
+                </div>
+
+                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-purple-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-purple-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10">
+                    <div class="w-20 h-20 mx-auto bg-purple-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                        <i data-lucide="trending-up" class="w-10 h-10 text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-3">标准化盈利模型</h3>
+                    <p class="text-sm text-gray-500 font-medium leading-relaxed">验证成熟商业模式<br>整店输出易于复制落地</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 支持体系 -->
+    <section id="support" class="py-24 bg-gray-900 text-white relative overflow-hidden rounded-[3rem] lg:rounded-[5rem] mx-4 sm:mx-6 lg:mx-8 shadow-2xl">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute -top-40 -left-40 w-[500px] h-[500px] bg-brand-600 rounded-full mix-blend-screen filter blur-[120px] opacity-30"></div>
+            <div class="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-fruit-600 rounded-full mix-blend-screen filter blur-[120px] opacity-30"></div>
+        </div>
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-black mb-6 tracking-tight leading-tight">
+                    全方位保驾护航<br/>
+                    <span class="text-brand-400 mt-2 inline-block">全链路赋能体系</span>
+                </h2>
+                <p class="text-gray-400 text-lg font-medium max-w-2xl mx-auto">我们深知合作伙伴的成功才是平台的成功。加入水果宇宙，您将直接获得总部在IP、运营及AI技术上的全维度深度赋能。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
+                    <div class="bg-brand-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-500 transition-colors">
+                        <i data-lucide="crown" class="w-8 h-8 text-brand-400 group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-3">顶级IP授权与视觉矩阵</h4>
+                    <p class="text-gray-400 text-sm font-medium leading-relaxed">开放“水果宇宙”全系潮酷IP形象授权。提供从品牌VI、门店空间设计到全套包装物料的标准化视觉方案，开局即自带流量光环与极高辨识度。</p>
+                </div>
+                
+                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
+                    <div class="bg-rose-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-rose-500 transition-colors">
+                        <i data-lucide="rocket" class="w-8 h-8 text-rose-400 group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-3">全域运营与爆款营销策划</h4>
+                    <p class="text-gray-400 text-sm font-medium leading-relaxed">资深团队提供从0到1的起盘陪跑。包含开业爆破方案、节假日主题营销、跨界联名活动策划，以及公私域联动打法，持续引爆门店与线上客流。</p>
+                </div>
+                
+                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
+                    <div class="bg-blue-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
+                        <i data-lucide="bot" class="w-8 h-8 text-blue-400 group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-3">AI智能系统与数字化大脑</h4>
+                    <p class="text-gray-400 text-sm font-medium leading-relaxed">接入行业领先的AI门店管理系统。实现大数据选址测算、智能选品推荐、精准库存预警与千人千面会员画像分析，用科技代替人工，让决策有据可依。</p>
+                </div>
+                
+                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
+                    <div class="bg-fruit-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-fruit-500 transition-colors">
+                        <i data-lucide="graduation-cap" class="w-8 h-8 text-fruit-400 group-hover:text-white"></i>
+                    </div>
+                    <h4 class="text-2xl font-bold mb-3">标准化SOP与金牌培训</h4>
+                    <p class="text-gray-400 text-sm font-medium leading-relaxed">沉淀海量成功实战经验，输出保姆级门店运营手册（SOP）。提供线上云课堂与线下督导带店实操，确保团队极速上手，高效复制盈利模型。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 交互式角色匹配区 (核心转化) -->
+    <section id="match" class="py-24 bg-white scroll-mt-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center gap-2 bg-brand-50 text-brand-600 font-black text-sm px-5 py-2 rounded-full mb-6 border border-brand-100">
+                    <i data-lucide="target" class="w-4 h-4"></i>
+                    <span>精准对接 · 高效共赢</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">请选择您的当前角色</h2>
+                <p class="text-gray-500 font-medium text-lg max-w-2xl mx-auto">告诉我们您拥有的资源或目前的诉求，系统将为您匹配最合适的商业模式。</p>
+            </div>
+
+            <!-- 角色选择 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12" id="role-container">
+                <!-- 角色卡片 -->
+                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="1" data-role-name="企业老板/投资者">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                            <i data-lucide="building-2" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">我是企业老板/投资者</h3>
+                    <p class="text-sm text-gray-500 font-medium">拥有雄厚资金与本地优势资源，寻找好项目。</p>
+                </button>
+
+                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="2" data-role-name="创业者/实体店主">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                            <i data-lucide="store" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">我是创业者/实体店主</h3>
+                    <p class="text-sm text-gray-500 font-medium">想要开一家标准化的水果店，或升级现有门店。</p>
+                </button>
+
+                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="3" data-role-name="采购/企事业后勤">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                            <i data-lucide="users" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">我是采购/企事业后勤</h3>
+                    <p class="text-sm text-gray-500 font-medium">需要长期、稳定的大宗水果供应及员工福利定制。</p>
+                </button>
+
+                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="4" data-role-name="自由职业者/大V">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                            <i data-lucide="network" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">我是自由职业者/大V</h3>
+                    <p class="text-sm text-gray-500 font-medium">拥有丰富的人脉与流量群，希望通过轻资产变现。</p>
+                </button>
+
+                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="5" data-role-name="品牌方/文创公司">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                            <i data-lucide="star" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">我是品牌方/文创公司</h3>
+                    <p class="text-sm text-gray-500 font-medium">寻求IP跨界联动，开发联名周边，实现粉丝互融。</p>
+                </button>
+
+                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="6" data-role-name="源头果农/加工厂">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                            <i data-lucide="tractor" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">我是源头果农/加工厂</h3>
+                    <p class="text-sm text-gray-500 font-medium">拥有优质产地货源，寻找全国销售渠道提升溢价。</p>
+                </button>
+            </div>
+
+            <!-- 匹配结果面板 (初始隐藏) -->
+            <div id="result-panel" class="hidden overflow-hidden rounded-[2.5rem] bg-gray-900 text-white shadow-2xl transition-all duration-500 transform translate-y-8 opacity-0 relative">
+                <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-brand-500 rounded-full mix-blend-screen filter blur-[100px]"></div>
+                </div>
+                
+                <div class="relative z-10 p-8 lg:p-12 flex flex-col lg:flex-row items-stretch gap-10">
+                    
+                    <!-- 左侧：模式详情 -->
+                    <div class="flex-1 w-full flex flex-col justify-center">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/20 text-brand-400 font-bold text-sm mb-6 border border-brand-500/30 w-max">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> 匹配成功
+                        </div>
+                        <h3 class="text-3xl lg:text-4xl font-black mb-4">最适合您的模式是：<br/><span id="matched-mode-name" class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-fruit-400 mt-2 inline-block">--</span></h3>
+                        <p id="matched-mode-desc" class="text-gray-400 font-medium leading-relaxed mb-8 text-lg">
+                            --
+                        </p>
+                        <div id="matched-mode-tags" class="flex flex-wrap gap-3">
+                            <!-- JS 动态注入标签 -->
+                        </div>
+                    </div>
+
+                    <!-- 右侧：更丰富的信息收集与海报生成 -->
+                    <div class="w-full lg:w-[420px] bg-white rounded-[2rem] p-8 shadow-xl text-gray-900 relative">
+                        <!-- 提交成功遮罩 -->
+                        <div id="quick-success" class="absolute inset-0 bg-white/95 z-20 hidden flex-col items-center justify-center text-center rounded-[2rem] p-6 backdrop-blur-sm">
+                            <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4 text-green-600 shadow-inner">
+                                <i data-lucide="image" class="w-8 h-8"></i>
+                            </div>
+                            <h4 class="text-2xl font-black mb-2">专属海报已生成并下载！</h4>
+                            <p class="text-sm text-gray-500 font-medium">请在您的相册或下载文件夹中查看<br>招商顾问将稍后与您联系</p>
+                            <button onclick="resetQuickForm()" class="mt-8 text-brand-600 font-bold bg-brand-50 px-6 py-2 rounded-full hover:bg-brand-100 transition-colors">重新生成或返回</button>
+                        </div>
+
+                        <h4 class="text-xl font-black mb-1 text-center">建档并获取详细方案</h4>
+                        <p class="text-xs text-gray-500 text-center mb-6 font-medium">完善信息，一键生成您的专属匹配海报</p>
+                        
+                        <form id="quick-form" class="space-y-3.5">
+                            <!-- 基础信息 -->
+                            <div class="grid grid-cols-2 gap-3.5">
+                                <div>
+                                    <input id="q-name" type="text" required placeholder="您的称呼" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
+                                </div>
+                                <div>
+                                    <input id="q-phone" type="text" required placeholder="手机号码/微信号" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
+                                </div>
+                            </div>
+                            <!-- 公司与职位 -->
+                            <div class="grid grid-cols-2 gap-3.5">
+                                <div>
+                                    <input id="q-company" type="text" placeholder="公司名称 (选填)" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
+                                </div>
+                                <div>
+                                    <input id="q-position" type="text" placeholder="您的职位" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
+                                </div>
+                            </div>
+                            <!-- 城市与预算 -->
+                            <div class="grid grid-cols-2 gap-3.5">
+                                <div>
+                                    <input id="q-city" type="text" required placeholder="意向城市" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
+                                </div>
+                                <div>
+                                    <select id="q-budget" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
+                                        <option value="" disabled selected>计划投入预算</option>
+                                        <option value="自有资源置换">自有资源 (轻资产)</option>
+                                        <option value="10万以内">10万 以内</option>
+                                        <option value="10万 - 30万">10万 - 30万</option>
+                                        <option value="30万 - 50万">30万 - 50万</option>
+                                        <option value="50万以上">50万 以上</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- 合作意向 -->
+                            <div>
+                                <textarea id="q-content" rows="2" placeholder="期望合作的具体内容或自有资源优势..." class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm resize-none"></textarea>
+                            </div>
+                            
+                            <button type="submit" id="btn-submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-black text-base py-3.5 rounded-xl shadow-lg hover:shadow-brand-500/40 transition-all transform active:scale-[0.98] mt-2 relative">
+                                <!-- 正常状态 -->
+                                <span id="btn-text" class="flex justify-center items-center gap-2">
+                                    生成专属合作海报 <i data-lucide="image-down" class="w-5 h-5"></i>
+                                </span>
+                                <!-- 加载状态 -->
+                                <span id="btn-loading" class="hidden justify-center items-center gap-2">
+                                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> 海报生成中...
+                                </span>
+                            </button>
+                        </form>
+                        <p class="text-center text-[11px] text-gray-400 mt-4">您的信息仅用于内部匹配规划，严格保密</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 极简 Footer -->
+    <footer class="bg-white py-10 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="bg-gray-900 p-1.5 rounded-lg text-white">
+                    <i data-lucide="grape" class="w-5 h-5"></i>
+                </div>
+                <span class="font-black text-gray-900 text-lg tracking-tight">水果宇宙</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 交互逻辑脚本 -->
+    <script>
+        // 初始化图标
+        lucide.createIcons();
+
+        // 导航栏滚动逻辑
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-xl', 'shadow-brand-500/10', 'border-gray-200');
+                nav.classList.remove('border-gray-100/50');
+            } else {
+                nav.classList.remove('shadow-xl', 'shadow-brand-500/10', 'border-gray-200');
+                nav.classList.add('border-gray-100/50');
+            }
+        });
+
+        // 全局变量：记录当前选中的角色名称和模式数据
+        let currentSelectedRoleName = "";
+        let currentSelectedModeData = null;
+        
+        // 模式数据库
+        const modeDatabase = {
+            "1": {
+                name: "区域独家代理",
+                desc: "针对有本地资源及雄厚资金的企业或个人。我们将授予区域独家经营权及招商权，让您通过下级加盟体系及多层级分成，打造区域级市场坚实壁垒，尽享高收益预期。",
+                tags: ["独家授权", "高收益分配", "渠道保护"]
+            },
+            "2": {
+                name: "品牌门店加盟",
+                desc: "为想要开店的创业者提供“整店输出”的保姆式扶持。涵盖科学选址、标准化潮酷店型设计、商品陈列指导、日常SOP运营培训，并引入全渠道公私域流量，助力快速回本。",
+                tags: ["整店输出", "公私域引流", "保姆级扶持"]
+            },
+            "3": {
+                name: "企业供应链合作 (B2B)",
+                desc: "为企事业单位、大宗采购客户提供批量供货及企业福利定制服务。依托我们的全球直采优势，为您提供量大价优、品质稳定的长期复购方案。",
+                tags: ["量大价优", "专属定制", "稳定复购"]
+            },
+            "4": {
+                name: "城市合伙人 (轻资产)",
+                desc: "无需囤货开店，凭借自身的人脉资源或社群流量即可加入。借助平台数字化系统跟进客源，达成业务或推荐客户即可获取丰厚佣金，实现真正的轻资产变现。",
+                tags: ["零库存", "人脉变现", "系统赋能"]
+            },
+            "5": {
+                name: "IP联名与品牌合作",
+                desc: "面向各大品牌主理人与文创机构。借助水果宇宙独特的IP形象，开发跨界联名产品，策划现象级主题营销活动，实现品牌受众互融与圈层突破。",
+                tags: ["跨界破圈", "IP赋能", "品牌共建"]
+            },
+            "6": {
+                name: "供应链入驻合作",
+                desc: "诚邀拥有优质产地、原生态果园及深加工能力的源头厂家入驻平台。借助我们的全国终端渠道及品牌溢价，让好产品卖出好价格，互利共赢。",
+                tags: ["渠道拓展", "源头直供", "品牌溢价"]
+            }
+        };
+
+        const roleBtns = document.querySelectorAll('.role-btn');
+        const resultPanel = document.getElementById('result-panel');
+        const modeNameEl = document.getElementById('matched-mode-name');
+        const modeDescEl = document.getElementById('matched-mode-desc');
+        const modeTagsEl = document.getElementById('matched-mode-tags');
+
+        roleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 清除所有按钮的激活状态
+                roleBtns.forEach(b => {
+                    b.classList.remove('border-brand-500', 'ring-4', 'ring-brand-500/20', 'bg-brand-50');
+                    b.classList.add('border-gray-100', 'bg-white');
+                    const iconBox = b.querySelector('.bg-gray-50, .bg-brand-500, .w-12.h-12');
+                    if(iconBox) {
+                        iconBox.classList.remove('bg-brand-500');
+                        iconBox.classList.add('bg-gray-50');
+                        const icon = iconBox.querySelector('i, svg');
+                        if(icon) {
+                            icon.classList.remove('text-white');
+                            icon.classList.add('text-gray-400');
+                        }
+                    }
+                });
+
+                // 设置当前按钮为激活状态
+                this.classList.remove('border-gray-100', 'bg-white');
+                this.classList.add('border-brand-500', 'ring-4', 'ring-brand-500/20', 'bg-brand-50');
+                const activeIconBox = this.querySelector('.bg-gray-50, .w-12.h-12');
+                if(activeIconBox) {
+                    activeIconBox.classList.remove('bg-gray-50');
+                    activeIconBox.classList.add('bg-brand-500');
+                    const icon = activeIconBox.querySelector('i, svg');
+                    if(icon) {
+                        icon.classList.remove('text-gray-400');
+                        icon.classList.add('text-white');
+                    }
+                }
+
+                // 获取数据并渲染
+                const roleId = this.getAttribute('data-role');
+                currentSelectedRoleName = this.getAttribute('data-role-name'); // 记录选择的角色名字
+                currentSelectedModeData = modeDatabase[roleId]; // 记录对应模式数据
+
+                modeNameEl.textContent = currentSelectedModeData.name;
+                modeDescEl.textContent = currentSelectedModeData.desc;
+                
+                // 渲染展示面板标签
+                modeTagsEl.innerHTML = currentSelectedModeData.tags.map(tag => 
+                    `<span class="px-4 py-1.5 bg-gray-800 text-gray-300 font-bold text-sm rounded-full border border-gray-700">${tag}</span>`
+                ).join('');
+
+                // 显示面板动画
+                resultPanel.classList.remove('hidden');
+                void resultPanel.offsetWidth; 
+                resultPanel.classList.remove('translate-y-8', 'opacity-0');
+
+                // 滚动至视图中央
+                setTimeout(() => {
+                    const yOffset = -100; 
+                    const y = resultPanel.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }, 100);
+            });
+        });
+
+        // 海报生成与表单提交逻辑
+        document.getElementById('quick-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // UI 切换为 Loading 状态
+            const btnSubmit = document.getElementById('btn-submit');
+            const btnText = document.getElementById('btn-text');
+            const btnLoading = document.getElementById('btn-loading');
+            
+            btnSubmit.disabled = true;
+            btnText.classList.replace('flex', 'hidden');
+            btnLoading.classList.replace('hidden', 'flex');
+
+            // 1. 获取用户填写的数据
+            const name = document.getElementById('q-name').value;
+            const phone = document.getElementById('q-phone').value;
+            const company = document.getElementById('q-company').value || "未提供";
+            const position = document.getElementById('q-position').value || "未提供";
+            const city = document.getElementById('q-city').value;
+            const budget = document.getElementById('q-budget').value;
+            const content = document.getElementById('q-content').value || "期待详细沟通对接";
+
+            // 2. 将数据填充到隐藏的海报 DOM 中
+            document.getElementById('p-name').textContent = name;
+            // 处理手机号隐私，中间四位打星号保护客户隐私(也可根据需求不打星)
+            document.getElementById('p-phone').textContent = phone; 
+            document.getElementById('p-company').textContent = company;
+            document.getElementById('p-position').textContent = position;
+            document.getElementById('p-city').textContent = city;
+            document.getElementById('p-budget').textContent = budget;
+            document.getElementById('p-content').textContent = content;
+            document.getElementById('p-role').textContent = currentSelectedRoleName;
+            
+            document.getElementById('p-mode-name').textContent = currentSelectedModeData.name;
+            document.getElementById('p-mode-desc').textContent = currentSelectedModeData.desc;
+            
+            // 填充海报上的标签
+            document.getElementById('p-mode-tags').innerHTML = currentSelectedModeData.tags.map(tag => 
+                `<span class="px-3 py-1 bg-gray-100 text-brand-600 font-bold text-sm rounded-full border border-gray-200">${tag}</span>`
+            ).join('');
+
+            // 3. 使用 html2canvas 生成图片
+            setTimeout(() => {
+                const posterElement = document.getElementById('poster-card');
+                
+                html2canvas(posterElement, {
+                    scale: 2, // 提高分辨率
+                    useCORS: true, // 允许跨域渲染图片
+                    backgroundColor: null // 保持圆角等透明属性
+                }).then(canvas => {
+                    // 生成图片 URL
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    // 触发本地下载
+                    const link = document.createElement('a');
+                    link.download = `水果宇宙专属方案-${name}.png`;
+                    link.href = imgData;
+                    link.click();
+
+                    // 恢复按钮状态
+                    btnSubmit.disabled = false;
+                    btnLoading.classList.replace('flex', 'hidden');
+                    btnText.classList.replace('hidden', 'flex');
+
+                    // 显示成功面板
+                    document.getElementById('quick-success').classList.remove('hidden');
+                    document.getElementById('quick-success').classList.add('flex');
+                }).catch(err => {
+                    console.error("生成海报失败:", err);
+                    alert("海报生成失败，请稍后重试");
+                    // 恢复按钮状态
+                    btnSubmit.disabled = false;
+                    btnLoading.classList.replace('flex', 'hidden');
+                    btnText.classList.replace('hidden', 'flex');
+                });
+            }, 500); // 预留 500ms 保证 DOM 文本渲染完毕
+        });
+
+        // 重置表单和UI
+        function resetQuickForm() {
+            document.getElementById('quick-form').reset();
+            document.getElementById('quick-success').classList.add('hidden');
+            document.getElementById('quick-success').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>
