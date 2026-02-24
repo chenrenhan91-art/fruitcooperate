@@ -1,664 +1,1039 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="zh-CN" class="scroll-smooth bg-black text-white">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>水果宇宙 | 全球化水果IP生态平台合作招募</title>
+    
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Lucide 图标库 -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- 引入 html2canvas 用于前端生成海报图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 引入 GSAP 及其插件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- 引入字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;500;700;900&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['"Noto Sans SC"', 'sans-serif'],
+                        cyber: ['"Orbitron"', 'sans-serif'],
                     },
                     colors: {
-                        brand: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            200: '#fed7aa',
-                            500: '#f97316', 
-                            600: '#ea580c',
-                            900: '#7c2d12',
-                        },
-                        fruit: {
-                            50: '#ecfdf5',
-                            100: '#d1fae5',
-                            500: '#10b981', 
-                            600: '#059669',
-                            900: '#064e3b',
+                        neon: {
+                            cyan: '#00f3ff',
+                            pink: '#ff003c',
+                            purple: '#b026ff',
+                            green: '#39ff14',
+                            dark: '#0a0a0c'
                         }
+                    },
+                    backgroundImage: {
+                        'cyber-grid': 'linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px)',
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Noto Sans SC', sans-serif; }
-        .gradient-text {
-            background: linear-gradient(135deg, #ea580c 0%, #f43f5e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #050505;
+            overflow-x: hidden;
+            /* 桌面端隐藏默认鼠标 */
+            cursor: none;
         }
-        .hero-bg {
-            background: radial-gradient(circle at top right, #fff7ed 0%, #f0fdf4 100%);
+        
+        /* 移动端恢复默认鼠标 */
+        @media (max-width: 768px) {
+            body { cursor: auto; }
+            .custom-cursor { display: none !important; }
         }
-        /* 隐藏滚动条但保留滚动功能 */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #b026ff; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00f3ff; }
+
+        /* 玻璃拟态与霓虹边框 */
+        .glass-panel {
+            background: rgba(10, 10, 12, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        
+        .neon-border-cyan {
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 0 10px rgba(0, 243, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .neon-border-cyan:hover {
+            border-color: #00f3ff;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6), inset 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+
+        .neon-border-pink {
+            border: 1px solid rgba(255, 0, 60, 0.3);
+            box-shadow: 0 0 10px rgba(255, 0, 60, 0.2), inset 0 0 10px rgba(255, 0, 60, 0.1);
+            transition: all 0.3s ease;
+        }
+        .neon-border-pink:hover {
+            border-color: #ff003c;
+            box-shadow: 0 0 20px rgba(255, 0, 60, 0.6), inset 0 0 15px rgba(255, 0, 60, 0.3);
+        }
+
+        /* 霓虹文字发光 */
+        .neon-text-cyan { text-shadow: 0 0 5px #00f3ff, 0 0 15px #00f3ff; }
+        .neon-text-pink { text-shadow: 0 0 5px #ff003c, 0 0 15px #ff003c; }
+
+        /* 3D 翻转卡片核心样式 */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        /* Glitch 故障效果 */
+        .glitch-wrapper { position: relative; display: inline-block; }
+        .glitch-wrapper::before, .glitch-wrapper::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            pointer-events: none;
+        }
+        .glitch-wrapper::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff003c;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-wrapper::after {
+            left: -2px;
+            text-shadow: -2px 0 #00f3ff;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(8px, 9999px, 78px, 0); }
+            20% { clip: rect(61px, 9999px, 14px, 0); }
+            40% { clip: rect(29px, 9999px, 58px, 0); }
+            60% { clip: rect(98px, 9999px, 34px, 0); }
+            80% { clip: rect(4px, 9999px, 83px, 0); }
+            100% { clip: rect(52px, 9999px, 20px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            20% { clip: rect(10px, 9999px, 60px, 0); }
+            40% { clip: rect(80px, 9999px, 20px, 0); }
+            60% { clip: rect(30px, 9999px, 80px, 0); }
+            80% { clip: rect(90px, 9999px, 10px, 0); }
+            100% { clip: rect(20px, 9999px, 70px, 0); }
+        }
+        
+        /* 背景网格动画 */
+        .bg-grid {
+            background-size: 40px 40px;
+            animation: moveGrid 10s linear infinite;
+        }
+        @keyframes moveGrid {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(40px); }
+        }
+
+        /* 移除 Select 下拉箭头的默认样式 */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* 全息水果特效 */
+        .hologram-fruit {
+            filter: grayscale(100%) sepia(100%) hue-rotate(130deg) saturate(500%) brightness(1.2) drop-shadow(0 0 15px #00f3ff);
+            opacity: 0.25;
+            transition: filter 0.4s ease, opacity 0.4s ease;
+            will-change: transform, filter, opacity;
+        }
+        .hologram-fruit:hover {
+            filter: grayscale(100%) sepia(100%) hue-rotate(280deg) saturate(600%) brightness(1.5) drop-shadow(0 0 25px #ff003c);
+            opacity: 0.9;
+            z-index: 50;
         }
     </style>
 </head>
-<body class="bg-[#fafafa] text-gray-800 antialiased selection:bg-brand-500 selection:text-white relative overflow-x-hidden">
+<body class="bg-neon-dark text-gray-300 relative">
+
+    <!-- 赛博自定义鼠标 (仅桌面端) -->
+    <div id="cursor-dot" class="custom-cursor fixed top-0 left-0 w-2 h-2 bg-neon-cyan rounded-full pointer-events-none z-[9999] shadow-[0_0_10px_#00f3ff] -translate-x-1/2 -translate-y-1/2 mix-blend-screen transition-transform duration-100 ease-out"></div>
+    <div id="cursor-ring" class="custom-cursor fixed top-0 left-0 w-8 h-8 border border-neon-cyan/50 rounded-full pointer-events-none z-[9998] shadow-[0_0_15px_rgba(0,243,255,0.3)] -translate-x-1/2 -translate-y-1/2 mix-blend-screen transition-transform duration-300 ease-out"></div>
 
     <!-- 海报生成隐藏区域 (不可见但会被 html2canvas 渲染) -->
     <div id="poster-export-zone" class="fixed top-[-9999px] left-[-9999px] z-[-1]">
-        <!-- 海报卡片本体 (800px 宽，适合手机查看的高清比例) -->
-        <div id="poster-card" class="w-[800px] bg-gradient-to-br from-gray-900 via-gray-800 to-brand-900 text-white p-14 rounded-[3rem] shadow-2xl relative overflow-hidden">
-            <!-- 装饰光晕 -->
-            <div class="absolute -top-40 -right-40 w-[500px] h-[500px] bg-brand-500 rounded-full mix-blend-screen filter blur-[100px] opacity-60"></div>
-            <div class="absolute -bottom-40 -left-40 w-[400px] h-[400px] bg-fruit-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
+        <div id="poster-card" class="w-[800px] bg-[#050505] text-white p-14 border-2 border-neon-cyan relative overflow-hidden font-sans">
+            <!-- Background grid & glow -->
+            <div class="absolute inset-0 bg-cyber-grid bg-[length:40px_40px] opacity-20 pointer-events-none"></div>
+            <div class="absolute -top-40 -right-40 w-[500px] h-[500px] bg-neon-purple rounded-full mix-blend-screen filter blur-[120px] opacity-40"></div>
+            <div class="absolute -bottom-40 -left-40 w-[400px] h-[400px] bg-neon-cyan rounded-full mix-blend-screen filter blur-[100px] opacity-30"></div>
             
-            <!-- 头部 Logo -->
-            <div class="flex items-center gap-4 mb-12 relative z-10">
-                <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
-                    <i data-lucide="grape" class="w-10 h-10 text-white"></i>
+            <!-- Header -->
+            <div class="flex items-center gap-4 mb-12 relative z-10 border-b border-white/10 pb-6">
+                <div class="border border-neon-cyan p-3 rounded-sm bg-neon-cyan/10">
+                    <i data-lucide="grape" class="w-10 h-10 text-neon-cyan"></i>
                 </div>
                 <div>
-                    <h2 class="text-4xl font-black tracking-widest">水果宇宙</h2>
-                    <p class="text-brand-300 font-bold tracking-widest text-sm mt-1">GLOBAL FRUIT IP PLATFORM</p>
+                    <h2 class="text-4xl font-black tracking-widest text-white">水果宇宙</h2>
+                    <p class="text-neon-cyan font-cyber tracking-widest text-sm mt-1">MATRIX_PROTOCOL_REPORT</p>
                 </div>
-                <div class="ml-auto px-6 py-2 bg-gradient-to-r from-brand-500 to-rose-500 rounded-full text-lg font-black shadow-lg">
-                    VIP 专属方案
+                <div class="ml-auto px-6 py-2 border border-neon-pink bg-neon-pink/10 text-neon-pink text-lg font-cyber font-bold tracking-widest uppercase rounded-sm">
+                    ACCESS_GRANTED
                 </div>
             </div>
 
-            <!-- 用户档案区 -->
-            <div class="bg-white/10 backdrop-blur-xl rounded-[2rem] p-8 mb-10 border border-white/20 relative z-10 shadow-inner">
-                <div class="flex items-center gap-3 mb-6 border-b border-white/20 pb-4">
-                    <i data-lucide="user-check" class="w-6 h-6 text-brand-400"></i>
-                    <h3 class="text-2xl font-bold text-brand-300">合伙人认证档案</h3>
+            <!-- User Info Grid -->
+            <div class="bg-black/50 backdrop-blur-md rounded-sm p-8 mb-10 border border-white/10 relative z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="fingerprint" class="w-6 h-6 text-neon-cyan"></i>
+                    <h3 class="text-2xl font-cyber font-bold tracking-widest text-neon-cyan">SUBJECT_PROFILE</h3>
                 </div>
-                <div class="grid grid-cols-2 gap-y-5 gap-x-8 text-lg">
-                    <p class="text-gray-400 flex flex-col gap-1">您的称呼<span id="p-name" class="text-white font-bold text-2xl">--</span></p>
-                    <p class="text-gray-400 flex flex-col gap-1">手机/微信<span id="p-phone" class="text-white font-bold text-2xl">--</span></p>
-                    <p class="text-gray-400 flex flex-col gap-1">公司名称<span id="p-company" class="text-white font-bold text-2xl">--</span></p>
-                    <p class="text-gray-400 flex flex-col gap-1">您的职位<span id="p-position" class="text-white font-bold text-2xl">--</span></p>
-                    <p class="text-gray-400 flex flex-col gap-1">所在城市<span id="p-city" class="text-white font-bold text-2xl">--</span></p>
-                    <p class="text-gray-400 flex flex-col gap-1">计划预算<span id="p-budget" class="text-brand-400 font-black text-2xl">--</span></p>
-                    <div class="col-span-2 bg-white/5 rounded-xl p-4 border border-white/10 mt-1">
-                        <p class="text-gray-400 text-sm mb-2">期望合作内容</p>
-                        <p id="p-content" class="text-white font-medium text-lg leading-relaxed break-words">--</p>
+                <div class="grid grid-cols-2 gap-y-6 gap-x-8 text-lg">
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1">NAME<span id="p-name" class="text-white font-sans font-bold text-2xl">--</span></p>
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1">COM_LINK<span id="p-phone" class="text-white font-sans font-bold text-2xl">--</span></p>
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1">CORP<span id="p-company" class="text-white font-sans font-bold text-2xl">--</span></p>
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1">RANK<span id="p-position" class="text-white font-sans font-bold text-2xl">--</span></p>
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1">SECTOR<span id="p-city" class="text-white font-sans font-bold text-2xl">--</span></p>
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1">FUNDS<span id="p-budget" class="text-neon-green font-sans font-black text-2xl">--</span></p>
+                    <p class="text-gray-500 font-cyber text-sm flex flex-col gap-1 col-span-2 border-t border-white/5 pt-4">ROLE_CLASS<span id="p-role" class="text-neon-pink font-sans font-bold text-xl">--</span></p>
+                    <div class="col-span-2 bg-neon-cyan/5 rounded-sm p-4 border border-neon-cyan/20">
+                        <p class="text-neon-cyan font-cyber text-xs tracking-widest mb-2">EXPECTED_SYNC_DATA</p>
+                        <p id="p-content" class="text-white font-sans font-medium text-lg leading-relaxed break-words">--</p>
                     </div>
-                    <p class="text-gray-400 flex flex-col gap-1 col-span-2 mt-2 bg-gray-800/50 p-4 rounded-xl border border-gray-700">当前角色画像<span id="p-role" class="text-white font-bold text-xl">--</span></p>
                 </div>
             </div>
 
-            <!-- 匹配结果区 -->
-            <div class="bg-white rounded-[2rem] p-10 text-gray-900 shadow-2xl relative z-10">
-                <div class="absolute -top-6 -right-6 w-16 h-16 bg-brand-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-brand-500/50 border-4 border-white">
-                    <i data-lucide="check" class="w-8 h-8"></i>
+            <!-- Match Result -->
+            <div class="bg-black/50 backdrop-blur-md rounded-sm p-10 border border-white/10 relative z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-neon-purple/20 text-neon-purple font-cyber font-bold text-xs tracking-widest mb-4 border border-neon-purple/50">
+                    <i data-lucide="cpu" class="w-4 h-4"></i> AI_MATCHED_PROTOCOL
                 </div>
-                <h4 id="p-mode-name" class="text-4xl font-black mb-6 tracking-tight">--</h4>
-                <p id="p-mode-desc" class="text-gray-600 font-medium leading-relaxed mb-8 text-xl">--</p>
+                <h4 id="p-mode-name" class="text-4xl font-sans font-black mb-6 tracking-tight text-white">--</h4>
+                <p id="p-mode-desc" class="text-gray-400 font-sans font-medium leading-relaxed mb-8 text-xl">--</p>
                 <div id="p-mode-tags" class="flex flex-wrap gap-3">
-                    <!-- 动态注入标签 -->
+                    <!-- Tags -->
                 </div>
             </div>
         </div>
     </div>
     <!-- /海报生成隐藏区域 -->
 
-    <!-- 悬浮胶囊导航栏 -->
-    <div class="fixed w-full z-50 transition-all duration-300 px-4 sm:px-6 lg:px-8 top-6 pointer-events-none" id="navbar-container">
-        <nav class="max-w-6xl mx-auto bg-white/90 backdrop-blur-xl shadow-sm border border-gray-100/50 rounded-full transition-all duration-300 pointer-events-auto" id="navbar">
-            <div class="flex justify-between items-center h-16 px-6">
-                <div class="flex items-center gap-3 cursor-pointer group" onclick="window.scrollTo(0,0)">
-                    <div class="bg-gradient-to-br from-brand-500 to-rose-400 text-white p-2 rounded-full group-hover:rotate-12 transition-transform duration-300 shadow-md">
-                        <i data-lucide="grape" class="w-5 h-5"></i>
-                    </div>
-                    <span class="font-black text-xl tracking-tight text-gray-900">水果宇宙</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#about" class="text-gray-600 hover:text-brand-600 font-bold transition">核心优势</a>
-                    <a href="#support" class="text-gray-600 hover:text-brand-600 font-bold transition">支持体系</a>
-                    <a href="#match" class="text-brand-600 font-black transition">合作匹配</a>
-                </div>
-                <div class="hidden md:flex">
-                    <a href="#match" class="bg-gray-900 hover:bg-brand-500 text-white px-6 py-2 rounded-full font-bold transition-all shadow-lg hover:shadow-brand-500/40 flex items-center gap-2 transform hover:scale-105 active:scale-95">
-                        立即匹配 <i data-lucide="zap" class="w-4 h-4"></i>
-                    </a>
-                </div>
-            </div>
-        </nav>
+    <!-- Canvas 粒子背景 -->
+    <canvas id="particle-canvas" class="fixed inset-0 z-0 pointer-events-none opacity-60"></canvas>
+
+    <!-- 动态网格背景 -->
+    <div class="fixed inset-0 z-0 pointer-events-none perspective-1000 opacity-20">
+        <div class="absolute inset-0 bg-cyber-grid bg-grid transform rotateX-60 scale-150 origin-bottom"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
     </div>
 
-    <!-- Hero 首屏 -->
-    <section class="relative pt-44 pb-20 lg:pt-56 lg:pb-32 overflow-hidden hero-bg rounded-b-[3rem] lg:rounded-b-[5rem] shadow-sm">
-        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-10 left-10 w-96 h-96 bg-brand-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-            <div class="absolute top-20 right-10 w-96 h-96 bg-fruit-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-            <div class="absolute -bottom-8 left-1/2 w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-        </div>
-        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 backdrop-blur-sm text-gray-800 font-bold text-sm mb-8 shadow-sm border border-white/50 transform hover:scale-105 transition cursor-default">
-                <span class="flex h-2.5 w-2.5 rounded-full bg-fruit-500 animate-pulse"></span>
-                寻找志同道合的城市同行者
+    <!-- 全息互动水果层 -->
+    <div id="cyber-fruits-layer" class="fixed inset-0 z-[5] pointer-events-none overflow-hidden"></div>
+
+    <!-- 悬浮导航栏 -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300 glass-panel border-b border-white/10 interactive-hover" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="window.scrollTo(0,0)">
+                <div class="relative w-10 h-10 flex items-center justify-center">
+                    <div class="absolute inset-0 border-2 border-neon-cyan rounded-sm transform group-hover:rotate-45 transition-transform duration-500 shadow-[0_0_10px_#00f3ff]"></div>
+                    <i data-lucide="grape" class="w-5 h-5 text-neon-cyan relative z-10 group-hover:animate-pulse"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-xl tracking-widest text-white group-hover:neon-text-cyan transition-all">水果宇宙</span>
+                </div>
             </div>
-            <h1 class="text-6xl md:text-8xl font-black text-gray-900 tracking-tight mb-8 leading-[1.1]">
-                发掘 <span class="gradient-text">水果宇宙</span><br/>的无限商机
-            </h1>
-            <p class="mt-6 max-w-2xl text-xl text-gray-600 mx-auto mb-12 leading-relaxed font-medium">
-                集IP授权、运营策划、AI赋能于一体。<br/>全链路赋能，助您实现低风险、多渠道盈利。
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-5">
-                <a href="#match" class="px-8 py-4 text-lg font-black rounded-full text-white bg-brand-500 hover:bg-brand-600 shadow-xl shadow-brand-500/40 transition-all transform hover:-translate-y-1 hover:scale-105 active:scale-95 flex justify-center items-center gap-2">
-                    智能匹配合作方案 <i data-lucide="arrow-down" class="w-5 h-5 animate-bounce"></i>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="interactive-hover text-sm font-bold tracking-widest hover:text-neon-cyan hover:neon-text-cyan transition-all relative overflow-hidden group">
+                    核心优势
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-neon-cyan transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#timeline" class="interactive-hover text-sm font-bold tracking-widest hover:text-neon-pink hover:neon-text-pink transition-all relative overflow-hidden group">
+                    合作流程
+                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-neon-pink transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#cta" class="interactive-hover px-6 py-2 bg-transparent border-2 border-neon-cyan text-neon-cyan font-bold tracking-widest hover:bg-neon-cyan hover:text-black hover:shadow-[0_0_20px_#00f3ff] transition-all duration-300 rounded-sm">
+                    合作匹配
                 </a>
             </div>
         </div>
-    </section>
+    </nav>
 
-    <!-- 核心优势 -->
-    <section id="about" class="py-24 bg-[#fafafa]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-6">为什么选择水果宇宙？</h2>
-                <div class="w-24 h-2 bg-brand-500 mx-auto rounded-full"></div>
+    <!-- Hero 赛博视差首屏 -->
+    <section class="relative min-h-screen flex items-center justify-center z-10 pt-20 overflow-hidden">
+        <!-- 装饰性发光球体 -->
+        <div class="hero-orb absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-neon-purple rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-pulse pointer-events-none" data-speed="2"></div>
+        <div class="hero-orb absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-neon-cyan rounded-full mix-blend-screen filter blur-[120px] opacity-20 pointer-events-none" data-speed="-2"></div>
+
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10 w-full">
+            <div class="hero-anim inline-flex items-center mb-6 px-4 py-1.5 border border-neon-cyan/50 bg-neon-cyan/10 backdrop-blur-sm text-neon-cyan text-xs font-bold tracking-widest rounded-full hover:scale-105 transition-transform cursor-default">
+                <span class="inline-block w-2 h-2 bg-neon-cyan rounded-full mr-2 shadow-[0_0_8px_#00f3ff]"></span>
+                寻找志同道合的城市同行者
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-fruit-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-fruit-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-fruit-500/10">
-                    <div class="w-20 h-20 mx-auto bg-fruit-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300">
-                        <i data-lucide="crown" class="w-10 h-10 text-fruit-600"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-3">强IP品牌力</h3>
-                    <p class="text-sm text-gray-500 font-medium leading-relaxed">独特潮酷IP形象<br>自带社交属性与高溢价</p>
-                </div>
-                
-                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-blue-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-blue-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10">
-                    <div class="w-20 h-20 mx-auto bg-blue-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
-                        <i data-lucide="bot" class="w-10 h-10 text-blue-600"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-3">AI数字化运营</h3>
-                    <p class="text-sm text-gray-500 font-medium leading-relaxed">智能选品与库存预警<br>科学决策降本增效</p>
-                </div>
-
-                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-rose-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-rose-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-rose-500/10">
-                    <div class="w-20 h-20 mx-auto bg-rose-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300">
-                        <i data-lucide="globe-2" class="w-10 h-10 text-rose-600"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-3">全域流量支持</h3>
-                    <p class="text-sm text-gray-500 font-medium leading-relaxed">线上线下多渠道矩阵<br>全方位引流获客</p>
-                </div>
-
-                <div class="p-8 lg:p-10 rounded-[2.5rem] bg-white hover:bg-purple-50 transition-all duration-300 group text-center border-2 border-transparent hover:border-purple-200 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10">
-                    <div class="w-20 h-20 mx-auto bg-purple-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
-                        <i data-lucide="trending-up" class="w-10 h-10 text-purple-600"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-3">标准化盈利模型</h3>
-                    <p class="text-sm text-gray-500 font-medium leading-relaxed">验证成熟商业模式<br>整店输出易于复制落地</p>
-                </div>
+            <h1 class="hero-anim text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight leading-tight">
+                <span class="block text-white mb-2">发掘</span>
+                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink font-cyber glitch-wrapper pb-2" data-text="水果宇宙">水果宇宙</span>
+                <span class="block text-white mt-2">的无限商机</span>
+            </h1>
+            
+            <p class="hero-anim mt-8 max-w-2xl mx-auto text-lg md:text-xl text-gray-400 font-medium leading-relaxed">
+                集 <span class="text-neon-cyan font-bold">IP授权</span>、<span class="text-neon-purple font-bold">运营策划</span>、<span class="text-neon-pink font-bold">AI赋能</span> 于一体。<br>全链路赋能体系，助您实现低风险、多渠道盈利。
+            </p>
+            
+            <div class="hero-anim mt-12 flex flex-col sm:flex-row justify-center gap-6 relative z-20">
+                <a href="#cta" class="interactive-hover magnetic-btn relative group px-8 py-4 bg-neon-cyan text-black font-bold text-lg tracking-widest rounded-sm overflow-hidden inline-block">
+                    <span class="absolute inset-0 w-full h-full bg-white/40 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-in-out skew-x-12"></span>
+                    <span class="relative z-10 flex items-center justify-center gap-2 pointer-events-none">
+                        智能匹配方案 <i data-lucide="zap" class="w-5 h-5"></i>
+                    </span>
+                    <div class="absolute inset-0 shadow-[0_0_30px_#00f3ff] opacity-50 pointer-events-none"></div>
+                </a>
+                <a href="#features" class="interactive-hover magnetic-btn px-8 py-4 bg-transparent border-2 border-white/20 text-white hover:border-neon-pink hover:text-neon-pink hover:shadow-[0_0_20px_#ff003c] font-bold text-lg tracking-widest transition-all duration-300 rounded-sm inline-block">
+                    <span class="pointer-events-none">了解核心优势</span>
+                </a>
+            </div>
+            
+            <!-- 滚动提示语 -->
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce pointer-events-none">
+                <span class="font-cyber text-[10px] tracking-[0.2em] text-neon-cyan mb-2">SCROLL_DOWN</span>
+                <div class="w-[1px] h-12 bg-gradient-to-b from-neon-cyan to-transparent"></div>
             </div>
         </div>
     </section>
 
-    <!-- 支持体系 -->
-    <section id="support" class="py-24 bg-gray-900 text-white relative overflow-hidden rounded-[3rem] lg:rounded-[5rem] mx-4 sm:mx-6 lg:mx-8 shadow-2xl">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute -top-40 -left-40 w-[500px] h-[500px] bg-brand-600 rounded-full mix-blend-screen filter blur-[120px] opacity-30"></div>
-            <div class="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-fruit-600 rounded-full mix-blend-screen filter blur-[120px] opacity-30"></div>
-        </div>
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-black mb-6 tracking-tight leading-tight">
-                    全方位保驾护航<br/>
-                    <span class="text-brand-400 mt-2 inline-block">全链路赋能体系</span>
+    <!-- 支持体系 3D 悬浮卡片区 -->
+    <section id="features" class="py-32 relative z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-20 text-center">
+                <h2 class="text-3xl md:text-5xl font-black text-white tracking-wider section-title inline-block hover:neon-text-cyan transition-all duration-500">
+                    全方位保驾护航，<br><span class="text-neon-cyan neon-text-cyan mt-4 inline-block">全链路赋能体系</span>
                 </h2>
-                <p class="text-gray-400 text-lg font-medium max-w-2xl mx-auto">我们深知合作伙伴的成功才是平台的成功。加入水果宇宙，您将直接获得总部在IP、运营及AI技术上的全维度深度赋能。</p>
+                <div class="w-24 h-1 bg-neon-cyan mt-6 shadow-[0_0_10px_#00f3ff] mx-auto transition-all duration-300 hover:w-32"></div>
+                <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">我们深知合作伙伴的成功才是平台的成功。加入水果宇宙，您将直接获得总部在IP、运营及AI技术上的全维度深度赋能。</p>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
-                    <div class="bg-brand-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-500 transition-colors">
-                        <i data-lucide="crown" class="w-8 h-8 text-brand-400 group-hover:text-white"></i>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 perspective-1000">
+                <!-- 卡片 1: IP -->
+                <div class="interactive-hover feature-card h-[400px] w-full group perspective-1000 cursor-none">
+                    <div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180">
+                        <div class="absolute inset-0 backface-hidden glass-panel neon-border-cyan rounded-xl p-8 flex flex-col items-center justify-center text-center">
+                            <div class="w-20 h-20 rounded-full border border-neon-cyan/50 flex items-center justify-center mb-6 relative overflow-hidden group-hover:shadow-[0_0_20px_#00f3ff] group-hover:scale-110 transition-all duration-500">
+                                <div class="absolute inset-0 bg-neon-cyan/10"></div>
+                                <i data-lucide="crown" class="w-10 h-10 text-neon-cyan"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-widest mb-2 group-hover:neon-text-cyan transition-all">顶级IP授权</h3>
+                            <p class="text-neon-cyan/70 text-sm tracking-widest">全套视觉矩阵赋能</p>
+                            <div class="absolute bottom-6 font-cyber text-[10px] text-gray-500 tracking-widest flex items-center gap-2">
+                                <span class="w-1 h-1 bg-gray-500 rounded-full animate-ping"></span> HOVER TO VIEW
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neon-cyan text-black rounded-xl p-8 flex flex-col justify-center shadow-[0_0_30px_#00f3ff]">
+                            <h3 class="text-2xl font-black mb-4 tracking-widest border-b border-black/20 pb-4">顶级IP授权与视觉</h3>
+                            <p class="font-medium leading-relaxed">开放“水果宇宙”全系潮酷IP形象授权。提供从品牌VI、门店空间设计到全套包装物料的标准化视觉方案，开局即自带流量光环与极高辨识度。</p>
+                        </div>
                     </div>
-                    <h4 class="text-2xl font-bold mb-3">顶级IP授权与视觉矩阵</h4>
-                    <p class="text-gray-400 text-sm font-medium leading-relaxed">开放“水果宇宙”全系潮酷IP形象授权。提供从品牌VI、门店空间设计到全套包装物料的标准化视觉方案，开局即自带流量光环与极高辨识度。</p>
                 </div>
-                
-                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
-                    <div class="bg-rose-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-rose-500 transition-colors">
-                        <i data-lucide="rocket" class="w-8 h-8 text-rose-400 group-hover:text-white"></i>
+
+                <!-- 卡片 2: 运营 -->
+                <div class="interactive-hover feature-card h-[400px] w-full group perspective-1000 cursor-none">
+                    <div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180">
+                        <div class="absolute inset-0 backface-hidden glass-panel neon-border-pink rounded-xl p-8 flex flex-col items-center justify-center text-center">
+                            <div class="w-20 h-20 rounded-full border border-neon-pink/50 flex items-center justify-center mb-6 relative overflow-hidden group-hover:shadow-[0_0_20px_#ff003c] group-hover:scale-110 transition-all duration-500">
+                                <div class="absolute inset-0 bg-neon-pink/10"></div>
+                                <i data-lucide="rocket" class="w-10 h-10 text-neon-pink"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-widest mb-2 group-hover:neon-text-pink transition-all">全域运营策划</h3>
+                            <p class="text-neon-pink/70 text-sm tracking-widest">引爆线上线下客流</p>
+                            <div class="absolute bottom-6 font-cyber text-[10px] text-gray-500 tracking-widest flex items-center gap-2">
+                                <span class="w-1 h-1 bg-gray-500 rounded-full animate-ping"></span> HOVER TO VIEW
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neon-pink text-white rounded-xl p-8 flex flex-col justify-center shadow-[0_0_30px_#ff003c]">
+                            <h3 class="text-2xl font-black mb-4 tracking-widest border-b border-white/20 pb-4">爆款营销策划</h3>
+                            <p class="font-medium leading-relaxed">资深团队提供从0到1起盘陪跑。包含开业爆破、节假日主题营销、跨界联名活动策划，及公私域联动打法，持续引爆门店客流。</p>
+                        </div>
                     </div>
-                    <h4 class="text-2xl font-bold mb-3">全域运营与爆款营销策划</h4>
-                    <p class="text-gray-400 text-sm font-medium leading-relaxed">资深团队提供从0到1的起盘陪跑。包含开业爆破方案、节假日主题营销、跨界联名活动策划，以及公私域联动打法，持续引爆门店与线上客流。</p>
                 </div>
-                
-                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
-                    <div class="bg-blue-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500 transition-colors">
-                        <i data-lucide="bot" class="w-8 h-8 text-blue-400 group-hover:text-white"></i>
+
+                <!-- 卡片 3: AI -->
+                <div class="interactive-hover feature-card h-[400px] w-full group perspective-1000 cursor-none">
+                    <div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180">
+                        <div class="absolute inset-0 backface-hidden glass-panel border border-neon-purple/30 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all hover:border-neon-purple hover:shadow-[0_0_20px_#b026ff,inset_0_0_15px_rgba(176,38,255,0.3)]">
+                            <div class="w-20 h-20 rounded-full border border-neon-purple/50 flex items-center justify-center mb-6 relative overflow-hidden group-hover:scale-110 transition-all duration-500">
+                                <div class="absolute inset-0 bg-neon-purple/10"></div>
+                                <i data-lucide="bot" class="w-10 h-10 text-neon-purple"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-widest mb-2" style="transition: text-shadow 0.3s;" onmouseover="this.style.textShadow='0 0 10px #b026ff'" onmouseout="this.style.textShadow='none'">AI数字化大脑</h3>
+                            <p class="text-neon-purple/70 text-sm tracking-widest">智能系统降本增效</p>
+                            <div class="absolute bottom-6 font-cyber text-[10px] text-gray-500 tracking-widest flex items-center gap-2">
+                                <span class="w-1 h-1 bg-gray-500 rounded-full animate-ping"></span> HOVER TO VIEW
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neon-purple text-white rounded-xl p-8 flex flex-col justify-center shadow-[0_0_30px_#b026ff]">
+                            <h3 class="text-2xl font-black mb-4 tracking-widest border-b border-white/20 pb-4">AI智能系统</h3>
+                            <p class="font-medium leading-relaxed">接入领先门店系统。实现大数据选址、智能选品推荐、精准库存预警与千人千面会员画像分析，用科技代替人工，让决策有据可依。</p>
+                        </div>
                     </div>
-                    <h4 class="text-2xl font-bold mb-3">AI智能系统与数字化大脑</h4>
-                    <p class="text-gray-400 text-sm font-medium leading-relaxed">接入行业领先的AI门店管理系统。实现大数据选址测算、智能选品推荐、精准库存预警与千人千面会员画像分析，用科技代替人工，让决策有据可依。</p>
                 </div>
-                
-                <div class="bg-gray-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-700/50 hover:bg-gray-800/60 transition-colors group hover:-translate-y-1">
-                    <div class="bg-fruit-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-fruit-500 transition-colors">
-                        <i data-lucide="graduation-cap" class="w-8 h-8 text-fruit-400 group-hover:text-white"></i>
+
+                <!-- 卡片 4: SOP -->
+                <div class="interactive-hover feature-card h-[400px] w-full group perspective-1000 cursor-none">
+                    <div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180">
+                        <div class="absolute inset-0 backface-hidden glass-panel border border-neon-green/30 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all hover:border-neon-green hover:shadow-[0_0_20px_#39ff14,inset_0_0_15px_rgba(57,255,20,0.3)]">
+                            <div class="w-20 h-20 rounded-full border border-neon-green/50 flex items-center justify-center mb-6 relative overflow-hidden group-hover:scale-110 transition-all duration-500">
+                                <div class="absolute inset-0 bg-neon-green/10"></div>
+                                <i data-lucide="graduation-cap" class="w-10 h-10 text-neon-green"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white tracking-widest mb-2" style="transition: text-shadow 0.3s;" onmouseover="this.style.textShadow='0 0 10px #39ff14'" onmouseout="this.style.textShadow='none'">金牌SOP培训</h3>
+                            <p class="text-neon-green/70 text-sm tracking-widest">标准化易复制落地</p>
+                            <div class="absolute bottom-6 font-cyber text-[10px] text-gray-500 tracking-widest flex items-center gap-2">
+                                <span class="w-1 h-1 bg-gray-500 rounded-full animate-ping"></span> HOVER TO VIEW
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-neon-green text-black rounded-xl p-8 flex flex-col justify-center shadow-[0_0_30px_#39ff14]">
+                            <h3 class="text-2xl font-black mb-4 tracking-widest border-b border-black/20 pb-4">标准化SOP</h3>
+                            <p class="font-medium leading-relaxed">沉淀海量成功实战经验，输出保姆级运营手册。提供线上云课堂与线下督导带店实操，确保团队极速上手，高效复制盈利模型。</p>
+                        </div>
                     </div>
-                    <h4 class="text-2xl font-bold mb-3">标准化SOP与金牌培训</h4>
-                    <p class="text-gray-400 text-sm font-medium leading-relaxed">沉淀海量成功实战经验，输出保姆级门店运营手册（SOP）。提供线上云课堂与线下督导带店实操，确保团队极速上手，高效复制盈利模型。</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 交互式角色匹配区 (核心转化) -->
-    <section id="match" class="py-24 bg-white scroll-mt-20">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <div class="inline-flex items-center gap-2 bg-brand-50 text-brand-600 font-black text-sm px-5 py-2 rounded-full mb-6 border border-brand-100">
-                    <i data-lucide="target" class="w-4 h-4"></i>
-                    <span>精准对接 · 高效共赢</span>
-                </div>
-                <h2 class="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">请选择您的当前角色</h2>
-                <p class="text-gray-500 font-medium text-lg max-w-2xl mx-auto">告诉我们您拥有的资源或目前的诉求，系统将为您匹配最合适的商业模式。</p>
+    <!-- 动态时间轴 (合作流程) -->
+    <section id="timeline" class="py-32 relative z-10 bg-black/50 border-y border-white/5">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-3xl md:text-5xl font-black text-white tracking-wider section-title inline-block">
+                    极简<span class="text-neon-pink neon-text-pink">合作流程</span>
+                </h2>
+                <div class="w-24 h-1 bg-neon-pink mx-auto mt-6 shadow-[0_0_10px_#ff003c]"></div>
+                <p class="mt-6 text-gray-400">标准化推进，最快可于 15 个工作日内完成落地启动。</p>
             </div>
 
-            <!-- 角色选择 Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12" id="role-container">
-                <!-- 角色卡片 -->
-                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="1" data-role-name="企业老板/投资者">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
-                            <i data-lucide="building-2" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">我是企业老板/投资者</h3>
-                    <p class="text-sm text-gray-500 font-medium">拥有雄厚资金与本地优势资源，寻找好项目。</p>
-                </button>
+            <div class="relative wrap overflow-hidden h-full">
+                <div class="absolute border-opacity-20 border-white h-full border-l-2 left-1/2 transform -translate-x-1/2 hidden md:block"></div>
+                <div class="absolute border-neon-pink h-[20%] border-l-2 left-1/2 transform -translate-x-1/2 hidden md:block shadow-[0_0_10px_#ff003c]" id="timeline-progress"></div>
 
-                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="2" data-role-name="创业者/实体店主">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
-                            <i data-lucide="store" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                <div class="mb-16 flex justify-between items-center w-full timeline-item right-timeline flex-col md:flex-row group">
+                    <div class="order-1 w-full md:w-5/12"></div>
+                    <div class="z-20 flex items-center order-1 bg-black shadow-xl w-16 h-16 rounded-full border-2 border-neon-cyan timeline-node shadow-[0_0_15px_#00f3ff] relative z-10 mb-6 md:mb-0 transition-transform duration-300 group-hover:scale-125 group-hover:bg-neon-cyan/20">
+                        <span class="mx-auto font-cyber font-bold text-neon-cyan text-xl">01</span>
                     </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">我是创业者/实体店主</h3>
-                    <p class="text-sm text-gray-500 font-medium">想要开一家标准化的水果店，或升级现有门店。</p>
-                </button>
-
-                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="3" data-role-name="采购/企事业后勤">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
-                            <i data-lucide="users" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
+                    <div class="order-1 glass-panel rounded-xl shadow-xl w-full md:w-5/12 px-8 py-6 text-left border border-white/10 hover:border-neon-cyan transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,243,255,0.2)] hover:-translate-y-2">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="radio" class="w-4 h-4 text-neon-cyan"></i>
+                            <h4 class="font-bold text-white text-xl tracking-wider group-hover:text-neon-cyan transition-colors">咨询与评估</h4>
                         </div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
+                        <p class="text-sm leading-snug text-gray-400 font-medium">提交意向表单，项目专员将与您联系，评估您的资质与资源情况，为您进行初步诊断。</p>
                     </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">我是采购/企事业后勤</h3>
-                    <p class="text-sm text-gray-500 font-medium">需要长期、稳定的大宗水果供应及员工福利定制。</p>
-                </button>
-
-                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="4" data-role-name="自由职业者/大V">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
-                            <i data-lucide="network" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">我是自由职业者/大V</h3>
-                    <p class="text-sm text-gray-500 font-medium">拥有丰富的人脉与流量群，希望通过轻资产变现。</p>
-                </button>
-
-                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="5" data-role-name="品牌方/文创公司">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
-                            <i data-lucide="star" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">我是品牌方/文创公司</h3>
-                    <p class="text-sm text-gray-500 font-medium">寻求IP跨界联动，开发联名周边，实现粉丝互融。</p>
-                </button>
-
-                <button class="role-btn text-left p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-brand-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group focus:outline-none" data-role="6" data-role-name="源头果农/加工厂">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-100 transition-colors">
-                            <i data-lucide="tractor" class="w-6 h-6 text-gray-400 group-hover:text-brand-600"></i>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-brand-500 transition-colors"></i>
-                    </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">我是源头果农/加工厂</h3>
-                    <p class="text-sm text-gray-500 font-medium">拥有优质产地货源，寻找全国销售渠道提升溢价。</p>
-                </button>
-            </div>
-
-            <!-- 匹配结果面板 (初始隐藏) -->
-            <div id="result-panel" class="hidden overflow-hidden rounded-[2.5rem] bg-gray-900 text-white shadow-2xl transition-all duration-500 transform translate-y-8 opacity-0 relative">
-                <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
-                    <div class="absolute top-0 right-0 w-96 h-96 bg-brand-500 rounded-full mix-blend-screen filter blur-[100px]"></div>
                 </div>
-                
-                <div class="relative z-10 p-8 lg:p-12 flex flex-col lg:flex-row items-stretch gap-10">
+
+                <div class="mb-16 flex justify-between flex-row-reverse items-center w-full timeline-item left-timeline flex-col md:flex-row-reverse group">
+                    <div class="order-1 w-full md:w-5/12"></div>
+                    <div class="z-20 flex items-center order-1 bg-black shadow-xl w-16 h-16 rounded-full border-2 border-neon-pink timeline-node shadow-[0_0_15px_#ff003c] relative z-10 mb-6 md:mb-0 transition-transform duration-300 group-hover:scale-125 group-hover:bg-neon-pink/20">
+                        <span class="mx-auto font-cyber font-bold text-neon-pink text-xl">02</span>
+                    </div>
+                    <div class="order-1 glass-panel rounded-xl shadow-xl w-full md:w-5/12 px-8 py-6 text-left md:text-right border border-white/10 hover:border-neon-pink transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,0,60,0.2)] hover:-translate-y-2">
+                        <div class="flex items-center gap-2 mb-2 md:justify-end">
+                            <i data-lucide="scan-line" class="w-4 h-4 text-neon-pink"></i>
+                            <h4 class="font-bold text-white text-xl tracking-wider group-hover:text-neon-pink transition-colors">考察与定模</h4>
+                        </div>
+                        <p class="text-sm leading-snug text-gray-400 font-medium">通过线上全息演示或实地考察基地，根据您的实际情况锁定最适合您的商业合作模式。</p>
+                    </div>
+                </div>
+
+                <div class="mb-16 flex justify-between items-center w-full timeline-item right-timeline flex-col md:flex-row group">
+                    <div class="order-1 w-full md:w-5/12"></div>
+                    <div class="z-20 flex items-center order-1 bg-black shadow-xl w-16 h-16 rounded-full border-2 border-neon-purple timeline-node shadow-[0_0_15px_#b026ff] relative z-10 mb-6 md:mb-0 transition-transform duration-300 group-hover:scale-125 group-hover:bg-neon-purple/20">
+                        <span class="mx-auto font-cyber font-bold text-neon-purple text-xl">03</span>
+                    </div>
+                    <div class="order-1 glass-panel rounded-xl shadow-xl w-full md:w-5/12 px-8 py-6 text-left border border-white/10 hover:border-neon-purple transition-all duration-300 hover:shadow-[0_0_20px_rgba(176,38,255,0.2)] hover:-translate-y-2">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="file-key-2" class="w-4 h-4 text-neon-purple"></i>
+                            <h4 class="font-bold text-white text-xl tracking-wider group-hover:text-neon-purple transition-colors">签约与培训</h4>
+                        </div>
+                        <p class="text-sm leading-snug text-gray-400 font-medium">签署正式合作合同，总部输出全套系统，并进行系统的运营指导及标准化 SOP 实操培训。</p>
+                    </div>
+                </div>
+
+                <div class="mb-16 flex justify-between flex-row-reverse items-center w-full timeline-item left-timeline flex-col md:flex-row-reverse group">
+                    <div class="order-1 w-full md:w-5/12"></div>
+                    <div class="z-20 flex items-center order-1 bg-black shadow-xl w-16 h-16 rounded-full border-2 border-neon-green timeline-node shadow-[0_0_15px_#39ff14] relative z-10 mb-6 md:mb-0 transition-transform duration-300 group-hover:scale-125 group-hover:bg-neon-green/20">
+                        <span class="mx-auto font-cyber font-bold text-neon-green text-xl">04</span>
+                    </div>
+                    <div class="order-1 glass-panel rounded-xl shadow-xl w-full md:w-5/12 px-8 py-6 text-left md:text-right border border-white/10 hover:border-neon-green transition-all duration-300 hover:shadow-[0_0_20px_rgba(57,255,20,0.2)] hover:-translate-y-2">
+                        <div class="flex items-center gap-2 mb-2 md:justify-end">
+                            <i data-lucide="power" class="w-4 h-4 text-neon-green"></i>
+                            <h4 class="font-bold text-white text-xl tracking-wider group-hover:text-neon-green transition-colors">落地与赋能</h4>
+                        </div>
+                        <p class="text-sm leading-snug text-gray-400 font-medium">项目正式启动点亮，您将持续获得平台全域流量导入与后端的运营技术支持护航。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA 信息收集表单 (带有 3D 浮动跟随交互的终端风格) -->
+    <section id="cta" class="py-32 relative z-10 overflow-hidden perspective-1000">
+        <div class="absolute inset-0 z-0 pointer-events-none">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-neon-cyan/20 rounded-full mix-blend-screen filter blur-[200px] animate-pulse"></div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <!-- 给这个面板加入了 3D Tilt 交互标识 ID -->
+            <div id="cyber-terminal" class="glass-panel neon-border-cyan rounded-2xl p-1 lg:p-2 relative transform-style-3d transition-transform duration-200 ease-out">
+                <!-- 边角装饰 -->
+                <div class="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-neon-cyan pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-neon-cyan pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-neon-cyan pointer-events-none"></div>
+                <div class="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-neon-cyan pointer-events-none"></div>
+
+                <div class="bg-black/80 backdrop-blur-3xl p-8 lg:p-12 rounded-xl border border-white/5 relative z-10 transform translate-z-10">
+                    <div class="text-center mb-10">
+                        <i data-lucide="terminal" class="w-12 h-12 text-neon-cyan mx-auto mb-4 animate-pulse"></i>
+                        <h2 class="text-3xl font-black text-white tracking-widest mb-2 neon-text-cyan">获取详细加盟方案</h2>
+                        <p class="text-neon-cyan/80 text-sm tracking-widest">完善您的信息，专属招商顾问将为您提供定制方案</p>
+                    </div>
+
+                    <form id="cyber-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">您的称呼</label>
+                                <input id="q-name" type="text" required placeholder="请输入姓名或公司" class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600">
+                            </div>
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">联系方式</label>
+                                <input id="q-phone" type="text" required placeholder="手机号码 / 微信号" class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">公司名称</label>
+                                <input id="q-company" type="text" placeholder="公司名称 (选填)" class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600">
+                            </div>
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">您的职位</label>
+                                <input id="q-position" type="text" placeholder="您的职位" class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">意向城市</label>
+                                <input id="q-city" type="text" required placeholder="如：广东省深圳市" class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600">
+                            </div>
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">计划预算</label>
+                                <select id="q-budget" required class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium appearance-none">
+                                    <option value="" disabled selected class="bg-gray-900 text-gray-500">计划投入预算</option>
+                                    <option value="自有资源置换" class="bg-gray-900 text-white">自有资源 (轻资产)</option>
+                                    <option value="10万以内" class="bg-gray-900 text-white">10万 以内</option>
+                                    <option value="10万 - 30万" class="bg-gray-900 text-white">10万 - 30万</option>
+                                    <option value="30万 - 50万" class="bg-gray-900 text-white">30万 - 50万</option>
+                                    <option value="50万以上" class="bg-gray-900 text-white">50万 以上</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="relative group">
+                            <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">选择角色</label>
+                            <select id="q-role" required class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium appearance-none">
+                                <option value="" disabled selected class="bg-gray-900 text-gray-500">选择您目前的角色身份</option>
+                                <option value="企业老板/投资者" class="bg-gray-900 text-white">企业老板/投资者</option>
+                                <option value="创业者/实体店主" class="bg-gray-900 text-white">创业者/实体店主</option>
+                                <option value="采购/企事业后勤" class="bg-gray-900 text-white">采购/企事业后勤</option>
+                                <option value="自由职业者/大V" class="bg-gray-900 text-white">自由职业者/大V</option>
+                                <option value="品牌方/文创公司" class="bg-gray-900 text-white">品牌方/文创公司</option>
+                                <option value="源头果农/加工厂" class="bg-gray-900 text-white">源头果农/加工厂</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none"></i>
+                        </div>
+
+                        <div class="relative group">
+                            <label class="absolute -top-2 left-4 px-1 bg-black text-xs tracking-widest text-neon-cyan z-10 transition-colors group-focus-within:text-white">期望合作内容</label>
+                            <textarea id="q-content" rows="2" placeholder="期望合作的具体内容或自有资源优势..." class="interactive-hover w-full bg-transparent border border-gray-700 rounded-sm px-4 py-4 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600 resize-none"></textarea>
+                        </div>
+
+                        <button type="submit" id="btn-submit" class="interactive-hover magnetic-btn w-full relative group mt-8 overflow-hidden rounded-sm bg-neon-cyan/10 border border-neon-cyan py-4 transition-all hover:bg-neon-cyan hover:shadow-[0_0_20px_#00f3ff]">
+                            <div class="absolute inset-0 w-0 bg-neon-cyan transition-all duration-500 ease-out group-hover:w-full z-0"></div>
+                            <span id="btn-text" class="relative z-10 font-bold text-lg tracking-[0.2em] text-neon-cyan group-hover:text-black uppercase flex items-center justify-center gap-3 pointer-events-none">
+                                生成专属合作报告 <i data-lucide="image-down" class="w-5 h-5"></i>
+                            </span>
+                            <span id="btn-loading" class="hidden relative z-10 font-bold text-lg tracking-[0.2em] text-neon-cyan group-hover:text-black uppercase items-center justify-center gap-3 pointer-events-none">
+                                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> REPORT_GENERATING...
+                            </span>
+                        </button>
+                    </form>
                     
-                    <!-- 左侧：模式详情 -->
-                    <div class="flex-1 w-full flex flex-col justify-center">
-                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/20 text-brand-400 font-bold text-sm mb-6 border border-brand-500/30 w-max">
-                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> 匹配成功
-                        </div>
-                        <h3 class="text-3xl lg:text-4xl font-black mb-4">最适合您的模式是：<br/><span id="matched-mode-name" class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-fruit-400 mt-2 inline-block">--</span></h3>
-                        <p id="matched-mode-desc" class="text-gray-400 font-medium leading-relaxed mb-8 text-lg">
-                            --
-                        </p>
-                        <div id="matched-mode-tags" class="flex flex-wrap gap-3">
-                            <!-- JS 动态注入标签 -->
-                        </div>
+                    <!-- 成功状态覆盖层 -->
+                    <div id="form-success" class="absolute inset-0 bg-black/95 backdrop-blur-xl z-20 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500">
+                        <i data-lucide="image" class="w-16 h-16 text-neon-green mb-4 animate-pulse"></i>
+                        <h3 class="text-2xl font-bold text-white tracking-widest mb-2 neon-text-cyan">专属报告已生成并下载</h3>
+                        <p class="text-gray-400 font-medium">请在您的相册或下载文件夹中查看，招商顾问即将接入...</p>
+                        <button onclick="resetCyberForm()" class="interactive-hover mt-8 px-6 py-2 border border-neon-cyan/50 text-neon-cyan font-bold text-sm hover:border-neon-cyan hover:bg-neon-cyan/10 transition-colors">返回继续浏览</button>
                     </div>
-
-                    <!-- 右侧：更丰富的信息收集与海报生成 -->
-                    <div class="w-full lg:w-[420px] bg-white rounded-[2rem] p-8 shadow-xl text-gray-900 relative">
-                        <!-- 提交成功遮罩 -->
-                        <div id="quick-success" class="absolute inset-0 bg-white/95 z-20 hidden flex-col items-center justify-center text-center rounded-[2rem] p-6 backdrop-blur-sm">
-                            <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4 text-green-600 shadow-inner">
-                                <i data-lucide="image" class="w-8 h-8"></i>
-                            </div>
-                            <h4 class="text-2xl font-black mb-2">专属海报已生成并下载！</h4>
-                            <p class="text-sm text-gray-500 font-medium">请在您的相册或下载文件夹中查看<br>招商顾问将稍后与您联系</p>
-                            <button onclick="resetQuickForm()" class="mt-8 text-brand-600 font-bold bg-brand-50 px-6 py-2 rounded-full hover:bg-brand-100 transition-colors">重新生成或返回</button>
-                        </div>
-
-                        <h4 class="text-xl font-black mb-1 text-center">建档并获取详细方案</h4>
-                        <p class="text-xs text-gray-500 text-center mb-6 font-medium">完善信息，一键生成您的专属匹配海报</p>
-                        
-                        <form id="quick-form" class="space-y-3.5">
-                            <!-- 基础信息 -->
-                            <div class="grid grid-cols-2 gap-3.5">
-                                <div>
-                                    <input id="q-name" type="text" required placeholder="您的称呼" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
-                                </div>
-                                <div>
-                                    <input id="q-phone" type="text" required placeholder="手机号码/微信号" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
-                                </div>
-                            </div>
-                            <!-- 公司与职位 -->
-                            <div class="grid grid-cols-2 gap-3.5">
-                                <div>
-                                    <input id="q-company" type="text" placeholder="公司名称 (选填)" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
-                                </div>
-                                <div>
-                                    <input id="q-position" type="text" placeholder="您的职位" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
-                                </div>
-                            </div>
-                            <!-- 城市与预算 -->
-                            <div class="grid grid-cols-2 gap-3.5">
-                                <div>
-                                    <input id="q-city" type="text" required placeholder="意向城市" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm">
-                                </div>
-                                <div>
-                                    <select id="q-budget" required class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_1rem_center]">
-                                        <option value="" disabled selected>计划投入预算</option>
-                                        <option value="自有资源置换">自有资源 (轻资产)</option>
-                                        <option value="10万以内">10万 以内</option>
-                                        <option value="10万 - 30万">10万 - 30万</option>
-                                        <option value="30万 - 50万">30万 - 50万</option>
-                                        <option value="50万以上">50万 以上</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- 合作意向 -->
-                            <div>
-                                <textarea id="q-content" rows="2" placeholder="期望合作的具体内容或自有资源优势..." class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all font-medium text-sm resize-none"></textarea>
-                            </div>
-                            
-                            <button type="submit" id="btn-submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-black text-base py-3.5 rounded-xl shadow-lg hover:shadow-brand-500/40 transition-all transform active:scale-[0.98] mt-2 relative">
-                                <!-- 正常状态 -->
-                                <span id="btn-text" class="flex justify-center items-center gap-2">
-                                    生成专属合作海报 <i data-lucide="image-down" class="w-5 h-5"></i>
-                                </span>
-                                <!-- 加载状态 -->
-                                <span id="btn-loading" class="hidden justify-center items-center gap-2">
-                                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> 海报生成中...
-                                </span>
-                            </button>
-                        </form>
-                        <p class="text-center text-[11px] text-gray-400 mt-4">您的信息仅用于内部匹配规划，严格保密</p>
-                    </div>
-
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 极简 Footer -->
-    <footer class="bg-white py-10 border-t border-gray-100">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+    <!-- 极简科技 Footer -->
+    <footer class="border-t border-white/5 bg-black py-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
-                <div class="bg-gray-900 p-1.5 rounded-lg text-white">
-                    <i data-lucide="grape" class="w-5 h-5"></i>
-                </div>
-                <span class="font-black text-gray-900 text-lg tracking-tight">水果宇宙</span>
+                <i data-lucide="grape" class="w-5 h-5 text-white/50 hover:text-neon-cyan transition-colors cursor-pointer"></i>
+                <span class="font-bold text-white/50 tracking-widest text-sm hover:text-white transition-colors cursor-default">水果宇宙</span>
             </div>
         </div>
     </footer>
 
-    <!-- 交互逻辑脚本 -->
+    <!-- 交互脚本与动画引擎 -->
     <script>
-        // 初始化图标
+        // 1. 初始化 Lucide 图标
         lucide.createIcons();
 
-        // 导航栏滚动逻辑
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 20) {
-                nav.classList.add('shadow-xl', 'shadow-brand-500/10', 'border-gray-200');
-                nav.classList.remove('border-gray-100/50');
-            } else {
-                nav.classList.remove('shadow-xl', 'shadow-brand-500/10', 'border-gray-200');
-                nav.classList.add('border-gray-100/50');
+        // 2. 全局鼠标追踪
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // 3. 赛博自定义鼠标 (仅桌面端)
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorRing = document.getElementById('cursor-ring');
+        
+        if(window.innerWidth > 768) {
+            window.addEventListener('mousemove', (e) => {
+                if (cursorDot) {
+                    cursorDot.style.left = `${e.clientX}px`;
+                    cursorDot.style.top = `${e.clientY}px`;
+                }
+                if (cursorRing) {
+                    gsap.to(cursorRing, { x: e.clientX, y: e.clientY, duration: 0.15, ease: "power2.out" });
+                }
+            });
+
+            const interactables = document.querySelectorAll('.interactive-hover');
+            interactables.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    if(cursorDot) gsap.to(cursorDot, { scale: 0, duration: 0.2 });
+                    if(cursorRing) gsap.to(cursorRing, { scale: 1.5, borderColor: '#ff003c', backgroundColor: 'rgba(255,0,60,0.1)', duration: 0.3 });
+                });
+                el.addEventListener('mouseleave', () => {
+                    if(cursorDot) gsap.to(cursorDot, { scale: 1, duration: 0.2 });
+                    if(cursorRing) gsap.to(cursorRing, { scale: 1, borderColor: 'rgba(0,243,255,0.5)', backgroundColor: 'transparent', duration: 0.3 });
+                });
+            });
+        }
+
+        // 4. 原生 Canvas 智能粒子交互背景 (星系连线效果)
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * -0.5 - 0.1; // 向上飘动
+                this.baseOpacity = Math.random() * 0.5 + 0.1;
+                this.color = Math.random() > 0.5 ? '#00f3ff' : '#b026ff'; 
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                // 边界重置
+                if (this.y < 0) { this.y = height; this.x = Math.random() * width; }
+                if (this.x < 0 || this.x > width) { this.speedX *= -1; }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.baseOpacity;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 核心交互：计算与鼠标的距离，产生能量连线
+                if(window.innerWidth > 768) {
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 180) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = this.color;
+                        ctx.globalAlpha = (180 - distance) / 180 * 0.4; // 越近线越亮
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(mouseX, mouseY);
+                        ctx.stroke();
+                        
+                        // 粒子稍微被鼠标排斥
+                        this.x -= dx * 0.01;
+                        this.y -= dy * 0.01;
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // 5. GSAP 高级滚动与交互动画
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 首屏动画
+        const tl = gsap.timeline();
+        tl.from(".hero-anim", {
+            y: 30, opacity: 0, duration: 1, stagger: 0.15, ease: "power3.out", delay: 0.2
+        });
+
+        // 标题入场动画
+        gsap.utils.toArray('.section-title').forEach(title => {
+            gsap.from(title, {
+                scrollTrigger: { trigger: title, start: "top 80%" },
+                x: -50, opacity: 0, duration: 0.8, ease: "power2.out"
+            });
+        });
+
+        // 卡片交错动画
+        gsap.from(".feature-card", {
+            scrollTrigger: { trigger: "#features", start: "top 70%" },
+            y: 50, opacity: 0, duration: 0.8, stagger: 0.15, ease: "back.out(1.2)"
+        });
+
+        // 时间轴节点动画
+        gsap.utils.toArray('.timeline-item').forEach((item, i) => {
+            gsap.from(item, {
+                scrollTrigger: { trigger: item, start: "top 85%" },
+                x: i % 2 === 0 ? 50 : -50, // 左右交错进入
+                opacity: 0, duration: 0.6, ease: "power2.out"
+            });
+            const node = item.querySelector('.timeline-node');
+            if(node) {
+                gsap.from(node, {
+                    scrollTrigger: { trigger: item, start: "top 85%" },
+                    scale: 0, duration: 0.5, ease: "back.out(2)", delay: 0.2
+                });
             }
         });
 
-        // 全局变量：记录当前选中的角色名称和模式数据
-        let currentSelectedRoleName = "";
-        let currentSelectedModeData = null;
+        // Hero 区霓虹光晕跟随鼠标的反向视差 (Parallax)
+        const heroOrbs = document.querySelectorAll('.hero-orb');
+        if(window.innerWidth > 768) {
+            window.addEventListener('mousemove', (e) => {
+                const xPos = (e.clientX / window.innerWidth - 0.5) * 100;
+                const yPos = (e.clientY / window.innerHeight - 0.5) * 100;
+                
+                heroOrbs.forEach(orb => {
+                    const speed = orb.getAttribute('data-speed');
+                    gsap.to(orb, { x: xPos * speed, y: yPos * speed, duration: 1.5, ease: "power2.out" });
+                });
+            });
+        }
+
+        // 按钮磁性吸引效果 (Magnetic Buttons)
+        const magneticBtns = document.querySelectorAll('.magnetic-btn');
+        if(window.innerWidth > 768) {
+            magneticBtns.forEach(btn => {
+                btn.addEventListener('mousemove', (e) => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = (e.clientX - rect.left - rect.width / 2) * 0.3; // 吸引强度
+                    const y = (e.clientY - rect.top - rect.height / 2) * 0.3;
+                    gsap.to(btn, { x: x, y: y, duration: 0.3, ease: "power2.out" });
+                });
+                btn.addEventListener('mouseleave', () => {
+                    gsap.to(btn, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1, 0.3)" });
+                });
+            });
+        }
+
+        // 终端表单 3D Tilt 悬浮效果
+        const terminal = document.getElementById('cyber-terminal');
+        if(window.innerWidth > 768 && terminal) {
+            terminal.addEventListener('mousemove', (e) => {
+                const rect = terminal.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // 计算倾斜角度，最大倾斜 5 度
+                const rotateX = ((y - centerY) / centerY) * -5;
+                const rotateY = ((x - centerX) / centerX) * 5;
+                
+                gsap.to(terminal, { rotateX: rotateX, rotateY: rotateY, duration: 0.5, ease: "power2.out" });
+            });
+            terminal.addEventListener('mouseleave', () => {
+                gsap.to(terminal, { rotateX: 0, rotateY: 0, duration: 1, ease: "elastic.out(1, 0.3)" });
+            });
+        }
+
+        // 导航栏背景模糊与阴影
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (nav) {
+                if (window.scrollY > 50) {
+                    nav.classList.add('bg-black/80', 'shadow-[0_4px_30px_rgba(0,243,255,0.1)]');
+                } else {
+                    nav.classList.remove('bg-black/80', 'shadow-[0_4px_30px_rgba(0,243,255,0.1)]');
+                }
+            }
+        });
+
+        // 时间轴线条生长动画
+        gsap.to("#timeline-progress", {
+            scrollTrigger: {
+                trigger: "#timeline",
+                start: "top center",
+                end: "bottom center",
+                scrub: 1
+            },
+            height: "100%",
+            ease: "none"
+        });
+
+        // 6. 全息赛博水果交互系统 (Holographic Fruits)
+        const fruitEmojis = ['🍇', '🍉', '🍋', '🍒', '🍍', '🍏', '🍑', '🍓', '🥝', '🥥'];
+        const fruitsLayer = document.getElementById('cyber-fruits-layer');
         
-        // 模式数据库
+        if (fruitsLayer) {
+            const fruitCount = 12; // 生成 12 个漂浮水果节点
+            for(let i=0; i<fruitCount; i++) {
+                const fruit = document.createElement('div');
+                // 设定基础样式与交互类名
+                fruit.className = 'absolute text-4xl md:text-5xl pointer-events-auto cursor-none interactive-hover hologram-fruit select-none flex items-center justify-center';
+                fruit.innerText = fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
+                
+                // 随机初始位置
+                fruit.style.left = (Math.random() * 90 + 5) + 'vw';
+                fruit.style.top = (Math.random() * 90 + 5) + 'vh';
+                
+                fruitsLayer.appendChild(fruit);
+
+                // GSAP 随机失重漂浮动画
+                gsap.to(fruit, {
+                    y: `+=${Math.random() * 120 - 60}`,
+                    x: `+=${Math.random() * 120 - 60}`,
+                    rotation: Math.random() * 360,
+                    duration: Math.random() * 8 + 6,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+
+                // 悬停交互：放大、自旋
+                fruit.addEventListener('mouseenter', () => {
+                    gsap.to(fruit, { scale: 1.4, rotation: "+=45", duration: 0.4, ease: "back.out(2)" });
+                });
+                fruit.addEventListener('mouseleave', () => {
+                    gsap.to(fruit, { scale: 1, duration: 0.4, ease: "power2.out" });
+                });
+
+                // 点击交互：数据提取与爆破重组
+                fruit.addEventListener('click', (e) => {
+                    // 1. 生成 +100 DATA 悬浮文字
+                    const text = document.createElement('div');
+                    text.innerText = "+100 DATA_SYNC";
+                    text.className = 'absolute text-neon-pink font-cyber font-bold text-sm pointer-events-none z-[9999] shadow-[0_0_10px_#ff003c] whitespace-nowrap';
+                    text.style.left = e.clientX + 'px';
+                    text.style.top = (e.clientY - 20) + 'px';
+                    document.body.appendChild(text);
+
+                    gsap.to(text, {
+                        y: "-=80",
+                        opacity: 0,
+                        duration: 1.2,
+                        ease: "power2.out",
+                        onComplete: () => text.remove()
+                    });
+
+                    // 2. 水果自身爆破特效
+                    gsap.to(fruit, {
+                        scale: 0,
+                        opacity: 0,
+                        rotation: "+=180",
+                        duration: 0.4,
+                        ease: "back.in(1.5)",
+                        onComplete: () => {
+                            // 在全屏随机新位置重生并换个水果
+                            fruit.style.left = (Math.random() * 90 + 5) + 'vw';
+                            fruit.style.top = (Math.random() * 90 + 5) + 'vh';
+                            fruit.innerText = fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
+                            gsap.to(fruit, { scale: 1, opacity: 0.25, rotation: "-=180", duration: 0.6, delay: 0.2, ease: "elastic.out(1, 0.5)" });
+                        }
+                    });
+                });
+            }
+        }
+
+        // 7. 海报生成与表单数据处理
         const modeDatabase = {
-            "1": {
+            "企业老板/投资者": {
                 name: "区域独家代理",
                 desc: "针对有本地资源及雄厚资金的企业或个人。我们将授予区域独家经营权及招商权，让您通过下级加盟体系及多层级分成，打造区域级市场坚实壁垒，尽享高收益预期。",
                 tags: ["独家授权", "高收益分配", "渠道保护"]
             },
-            "2": {
+            "创业者/实体店主": {
                 name: "品牌门店加盟",
                 desc: "为想要开店的创业者提供“整店输出”的保姆式扶持。涵盖科学选址、标准化潮酷店型设计、商品陈列指导、日常SOP运营培训，并引入全渠道公私域流量，助力快速回本。",
                 tags: ["整店输出", "公私域引流", "保姆级扶持"]
             },
-            "3": {
+            "采购/企事业后勤": {
                 name: "企业供应链合作 (B2B)",
                 desc: "为企事业单位、大宗采购客户提供批量供货及企业福利定制服务。依托我们的全球直采优势，为您提供量大价优、品质稳定的长期复购方案。",
                 tags: ["量大价优", "专属定制", "稳定复购"]
             },
-            "4": {
+            "自由职业者/大V": {
                 name: "城市合伙人 (轻资产)",
                 desc: "无需囤货开店，凭借自身的人脉资源或社群流量即可加入。借助平台数字化系统跟进客源，达成业务或推荐客户即可获取丰厚佣金，实现真正的轻资产变现。",
                 tags: ["零库存", "人脉变现", "系统赋能"]
             },
-            "5": {
+            "品牌方/文创公司": {
                 name: "IP联名与品牌合作",
                 desc: "面向各大品牌主理人与文创机构。借助水果宇宙独特的IP形象，开发跨界联名产品，策划现象级主题营销活动，实现品牌受众互融与圈层突破。",
                 tags: ["跨界破圈", "IP赋能", "品牌共建"]
             },
-            "6": {
+            "源头果农/加工厂": {
                 name: "供应链入驻合作",
                 desc: "诚邀拥有优质产地、原生态果园及深加工能力的源头厂家入驻平台。借助我们的全国终端渠道及品牌溢价，让好产品卖出好价格，互利共赢。",
                 tags: ["渠道拓展", "源头直供", "品牌溢价"]
             }
         };
 
-        const roleBtns = document.querySelectorAll('.role-btn');
-        const resultPanel = document.getElementById('result-panel');
-        const modeNameEl = document.getElementById('matched-mode-name');
-        const modeDescEl = document.getElementById('matched-mode-desc');
-        const modeTagsEl = document.getElementById('matched-mode-tags');
-
-        roleBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 清除所有按钮的激活状态
-                roleBtns.forEach(b => {
-                    b.classList.remove('border-brand-500', 'ring-4', 'ring-brand-500/20', 'bg-brand-50');
-                    b.classList.add('border-gray-100', 'bg-white');
-                    const iconBox = b.querySelector('.bg-gray-50, .bg-brand-500, .w-12.h-12');
-                    if(iconBox) {
-                        iconBox.classList.remove('bg-brand-500');
-                        iconBox.classList.add('bg-gray-50');
-                        const icon = iconBox.querySelector('i, svg');
-                        if(icon) {
-                            icon.classList.remove('text-white');
-                            icon.classList.add('text-gray-400');
-                        }
-                    }
-                });
-
-                // 设置当前按钮为激活状态
-                this.classList.remove('border-gray-100', 'bg-white');
-                this.classList.add('border-brand-500', 'ring-4', 'ring-brand-500/20', 'bg-brand-50');
-                const activeIconBox = this.querySelector('.bg-gray-50, .w-12.h-12');
-                if(activeIconBox) {
-                    activeIconBox.classList.remove('bg-gray-50');
-                    activeIconBox.classList.add('bg-brand-500');
-                    const icon = activeIconBox.querySelector('i, svg');
-                    if(icon) {
-                        icon.classList.remove('text-gray-400');
-                        icon.classList.add('text-white');
-                    }
-                }
-
-                // 获取数据并渲染
-                const roleId = this.getAttribute('data-role');
-                currentSelectedRoleName = this.getAttribute('data-role-name'); // 记录选择的角色名字
-                currentSelectedModeData = modeDatabase[roleId]; // 记录对应模式数据
-
-                modeNameEl.textContent = currentSelectedModeData.name;
-                modeDescEl.textContent = currentSelectedModeData.desc;
+        const cyberForm = document.getElementById('cyber-form');
+        if(cyberForm) {
+            cyberForm.addEventListener('submit', (e) => {
+                e.preventDefault();
                 
-                // 渲染展示面板标签
-                modeTagsEl.innerHTML = currentSelectedModeData.tags.map(tag => 
-                    `<span class="px-4 py-1.5 bg-gray-800 text-gray-300 font-bold text-sm rounded-full border border-gray-700">${tag}</span>`
+                // UI 切换为 Loading 状态
+                const btnSubmit = document.getElementById('btn-submit');
+                const btnText = document.getElementById('btn-text');
+                const btnLoading = document.getElementById('btn-loading');
+                
+                btnSubmit.disabled = true;
+                btnText.classList.replace('flex', 'hidden');
+                btnLoading.classList.replace('hidden', 'flex');
+
+                // 1. 获取用户填写的数据
+                const name = document.getElementById('q-name').value;
+                const phone = document.getElementById('q-phone').value;
+                const company = document.getElementById('q-company').value || "未提供";
+                const position = document.getElementById('q-position').value || "未提供";
+                const city = document.getElementById('q-city').value;
+                const budget = document.getElementById('q-budget').value;
+                const role = document.getElementById('q-role').value;
+                const content = document.getElementById('q-content').value || "期待详细沟通对接";
+
+                const modeData = modeDatabase[role];
+
+                // 2. 将数据填充到隐藏的海报 DOM 中
+                document.getElementById('p-name').textContent = name;
+                document.getElementById('p-phone').textContent = phone; 
+                document.getElementById('p-company').textContent = company;
+                document.getElementById('p-position').textContent = position;
+                document.getElementById('p-city').textContent = city;
+                document.getElementById('p-budget').textContent = budget;
+                document.getElementById('p-content').textContent = content;
+                document.getElementById('p-role').textContent = role;
+                
+                document.getElementById('p-mode-name').textContent = modeData.name;
+                document.getElementById('p-mode-desc').textContent = modeData.desc;
+                
+                // 填充海报上的标签
+                document.getElementById('p-mode-tags').innerHTML = modeData.tags.map(tag => 
+                    `<span class="px-3 py-1 bg-neon-cyan/10 text-neon-cyan font-bold text-sm rounded-sm border border-neon-cyan/50">${tag}</span>`
                 ).join('');
 
-                // 显示面板动画
-                resultPanel.classList.remove('hidden');
-                void resultPanel.offsetWidth; 
-                resultPanel.classList.remove('translate-y-8', 'opacity-0');
-
-                // 滚动至视图中央
+                // 3. 使用 html2canvas 生成图片
                 setTimeout(() => {
-                    const yOffset = -100; 
-                    const y = resultPanel.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                    window.scrollTo({top: y, behavior: 'smooth'});
-                }, 100);
-            });
-        });
-
-        // 海报生成与表单提交逻辑
-        document.getElementById('quick-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // UI 切换为 Loading 状态
-            const btnSubmit = document.getElementById('btn-submit');
-            const btnText = document.getElementById('btn-text');
-            const btnLoading = document.getElementById('btn-loading');
-            
-            btnSubmit.disabled = true;
-            btnText.classList.replace('flex', 'hidden');
-            btnLoading.classList.replace('hidden', 'flex');
-
-            // 1. 获取用户填写的数据
-            const name = document.getElementById('q-name').value;
-            const phone = document.getElementById('q-phone').value;
-            const company = document.getElementById('q-company').value || "未提供";
-            const position = document.getElementById('q-position').value || "未提供";
-            const city = document.getElementById('q-city').value;
-            const budget = document.getElementById('q-budget').value;
-            const content = document.getElementById('q-content').value || "期待详细沟通对接";
-
-            // 2. 将数据填充到隐藏的海报 DOM 中
-            document.getElementById('p-name').textContent = name;
-            // 处理手机号隐私，中间四位打星号保护客户隐私(也可根据需求不打星)
-            document.getElementById('p-phone').textContent = phone; 
-            document.getElementById('p-company').textContent = company;
-            document.getElementById('p-position').textContent = position;
-            document.getElementById('p-city').textContent = city;
-            document.getElementById('p-budget').textContent = budget;
-            document.getElementById('p-content').textContent = content;
-            document.getElementById('p-role').textContent = currentSelectedRoleName;
-            
-            document.getElementById('p-mode-name').textContent = currentSelectedModeData.name;
-            document.getElementById('p-mode-desc').textContent = currentSelectedModeData.desc;
-            
-            // 填充海报上的标签
-            document.getElementById('p-mode-tags').innerHTML = currentSelectedModeData.tags.map(tag => 
-                `<span class="px-3 py-1 bg-gray-100 text-brand-600 font-bold text-sm rounded-full border border-gray-200">${tag}</span>`
-            ).join('');
-
-            // 3. 使用 html2canvas 生成图片
-            setTimeout(() => {
-                const posterElement = document.getElementById('poster-card');
-                
-                html2canvas(posterElement, {
-                    scale: 2, // 提高分辨率
-                    useCORS: true, // 允许跨域渲染图片
-                    backgroundColor: null // 保持圆角等透明属性
-                }).then(canvas => {
-                    // 生成图片 URL
-                    const imgData = canvas.toDataURL('image/png');
+                    const posterElement = document.getElementById('poster-card');
                     
-                    // 触发本地下载
-                    const link = document.createElement('a');
-                    link.download = `水果宇宙专属方案-${name}.png`;
-                    link.href = imgData;
-                    link.click();
+                    html2canvas(posterElement, {
+                        scale: 2, // 提高分辨率
+                        useCORS: true, 
+                        backgroundColor: '#050505' // 保持赛博黑背景
+                    }).then(canvas => {
+                        // 生成图片 URL
+                        const imgData = canvas.toDataURL('image/png');
+                        
+                        // 触发本地下载
+                        const link = document.createElement('a');
+                        link.download = `FRUIT_UNIVERSE_PROTOCOL_${name}.png`;
+                        link.href = imgData;
+                        link.click();
 
-                    // 恢复按钮状态
-                    btnSubmit.disabled = false;
-                    btnLoading.classList.replace('flex', 'hidden');
-                    btnText.classList.replace('hidden', 'flex');
+                        // 恢复按钮状态
+                        btnSubmit.disabled = false;
+                        btnLoading.classList.replace('flex', 'hidden');
+                        btnText.classList.replace('hidden', 'flex');
 
-                    // 显示成功面板
-                    document.getElementById('quick-success').classList.remove('hidden');
-                    document.getElementById('quick-success').classList.add('flex');
-                }).catch(err => {
-                    console.error("生成海报失败:", err);
-                    alert("海报生成失败，请稍后重试");
-                    // 恢复按钮状态
-                    btnSubmit.disabled = false;
-                    btnLoading.classList.replace('flex', 'hidden');
-                    btnText.classList.replace('hidden', 'flex');
-                });
-            }, 500); // 预留 500ms 保证 DOM 文本渲染完毕
-        });
+                        // 显示成功面板
+                        const successPanel = document.getElementById('form-success');
+                        successPanel.classList.remove('hidden');
+                        void successPanel.offsetWidth;
+                        successPanel.classList.replace('opacity-0', 'opacity-100');
+                    }).catch(err => {
+                        console.error("生成海报失败:", err);
+                        alert("报告生成失败，请稍后重试");
+                        btnSubmit.disabled = false;
+                        btnLoading.classList.replace('flex', 'hidden');
+                        btnText.classList.replace('hidden', 'flex');
+                    });
+                }, 500); // 预留 500ms 保证 DOM 文本渲染完毕
+            });
+        }
 
-        // 重置表单和UI
-        function resetQuickForm() {
-            document.getElementById('quick-form').reset();
-            document.getElementById('quick-success').classList.add('hidden');
-            document.getElementById('quick-success').classList.remove('flex');
+        window.resetCyberForm = function() {
+            if (document.getElementById('cyber-form')) {
+                document.getElementById('cyber-form').reset();
+            }
+            const successPanel = document.getElementById('form-success');
+            if (successPanel) {
+                successPanel.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => successPanel.classList.add('hidden'), 500);
+            }
         }
     </script>
 </body>
