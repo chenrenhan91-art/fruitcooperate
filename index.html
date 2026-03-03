@@ -111,7 +111,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #050505;
+            background: transparent;
             pointer-events: none;
         }
         .glitch-wrapper::before {
@@ -172,6 +172,29 @@
             opacity: 0.9;
             z-index: 50;
         }
+
+        /* AI助手动画与对话框 */
+        .ai-float { animation: float-anim 3s ease-in-out infinite; }
+        @keyframes float-anim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .ai-action { animation: action-anim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes action-anim {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(10deg) translateY(-20px); }
+            100% { transform: scale(1) rotate(0deg) translateY(0); }
+        }
+        .chat-window {
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform-origin: bottom right;
+        }
+        .chat-hidden { opacity: 0; transform: scale(0.8) translateY(20px); pointer-events: none; }
+        .chat-visible { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+        
+        /* 隐藏滚动条增强版 */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-neon-dark text-gray-300 relative">
@@ -179,6 +202,18 @@
     <!-- 赛博自定义鼠标 (仅桌面端) -->
     <div id="cursor-dot" class="custom-cursor fixed top-0 left-0 w-2 h-2 bg-neon-cyan rounded-full pointer-events-none z-[9999] shadow-[0_0_10px_#00f3ff] -translate-x-1/2 -translate-y-1/2 mix-blend-screen transition-transform duration-100 ease-out"></div>
     <div id="cursor-ring" class="custom-cursor fixed top-0 left-0 w-8 h-8 border border-neon-cyan/50 rounded-full pointer-events-none z-[9998] shadow-[0_0_15px_rgba(0,243,255,0.3)] -translate-x-1/2 -translate-y-1/2 mix-blend-screen transition-transform duration-300 ease-out"></div>
+
+    <!-- WebGL Balatro 着色器背景层 -->
+    <canvas id="balatro-bg" class="fixed inset-0 z-[-3] w-full h-full pointer-events-none opacity-40"></canvas>
+
+    <!-- Canvas 粒子背景层 -->
+    <canvas id="particle-canvas" class="fixed inset-0 z-[-2] pointer-events-none opacity-60"></canvas>
+
+    <!-- 动态网格背景层 -->
+    <div class="fixed inset-0 z-[-1] pointer-events-none perspective-1000 opacity-20">
+        <div class="absolute inset-0 bg-cyber-grid bg-grid transform rotateX-60 scale-150 origin-bottom"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
+    </div>
 
     <!-- 海报生成隐藏区域 (不可见但会被 html2canvas 渲染) -->
     <div id="poster-export-zone" class="fixed top-[-9999px] left-[-9999px] z-[-1]">
@@ -236,16 +271,6 @@
             </div>
         </div>
     </div>
-    <!-- /海报生成隐藏区域 -->
-
-    <!-- Canvas 粒子背景 -->
-    <canvas id="particle-canvas" class="fixed inset-0 z-0 pointer-events-none opacity-60"></canvas>
-
-    <!-- 动态网格背景 -->
-    <div class="fixed inset-0 z-0 pointer-events-none perspective-1000 opacity-20">
-        <div class="absolute inset-0 bg-cyber-grid bg-grid transform rotateX-60 scale-150 origin-bottom"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black"></div>
-    </div>
 
     <!-- 全息互动水果层 -->
     <div id="cyber-fruits-layer" class="fixed inset-0 z-[5] pointer-events-none overflow-hidden"></div>
@@ -282,8 +307,8 @@
     <!-- Hero 赛博视差首屏 -->
     <section class="relative min-h-screen flex items-center justify-center z-10 pt-20 overflow-hidden">
         <!-- 装饰性发光球体 -->
-        <div class="hero-orb absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-neon-purple rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-pulse pointer-events-none" data-speed="2"></div>
-        <div class="hero-orb absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-neon-cyan rounded-full mix-blend-screen filter blur-[120px] opacity-20 pointer-events-none" data-speed="-2"></div>
+        <div class="hero-orb absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-neon-purple rounded-full mix-blend-screen filter blur-[150px] opacity-10 pointer-events-none" data-speed="2"></div>
+        <div class="hero-orb absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-neon-cyan rounded-full mix-blend-screen filter blur-[120px] opacity-10 pointer-events-none" data-speed="-2"></div>
 
         <div class="max-w-7xl mx-auto px-6 text-center relative z-10 w-full">
             <div class="hero-anim inline-flex items-center mb-6 px-4 py-1.5 border border-neon-cyan/50 bg-neon-cyan/10 backdrop-blur-sm text-neon-cyan text-xs font-bold tracking-widest rounded-full hover:scale-105 transition-transform cursor-default">
@@ -502,9 +527,7 @@
         </div>
 
         <div class="max-w-4xl mx-auto px-6 relative z-10">
-            <!-- 给这个面板加入了 3D Tilt 交互标识 ID -->
             <div id="cyber-terminal" class="glass-panel neon-border-cyan rounded-2xl p-1 lg:p-2 relative transform-style-3d transition-transform duration-200 ease-out">
-                <!-- 边角装饰 -->
                 <div class="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-neon-cyan pointer-events-none"></div>
                 <div class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-neon-cyan pointer-events-none"></div>
                 <div class="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-neon-cyan pointer-events-none"></div>
@@ -611,8 +634,293 @@
         </div>
     </footer>
 
-    <!-- 交互脚本与动画引擎 -->
+    <!-- AI 客服助手 (新增) -->
+    <div id="ai-assistant-btn" class="fixed bottom-10 right-8 z-[100] cursor-pointer group ai-float perspective-1000">
+        <div class="relative transform-style-3d transition-transform duration-300 group-hover:rotate-y-12" id="ai-avatar-container">
+            <!-- 赛博背景光晕 -->
+            <div class="absolute inset-0 bg-neon-cyan rounded-full filter blur-[20px] opacity-60 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+            
+            <!-- 形象容器 -->
+            <div class="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-neon-cyan overflow-hidden bg-neon-dark shadow-[0_0_20px_#00f3ff]">
+                <!-- 载入上传的水果宇宙形象 -->
+                <img src="avatar.jpg" alt="AI Assistant" class="w-full h-full object-cover transform scale-[1.15] translate-y-1 group-hover:scale-125 transition-transform duration-500 pointer-events-none">
+            </div>
+            
+            <!-- 状态标签 -->
+            <div class="absolute -top-2 -right-2 bg-neon-pink text-white text-[10px] font-cyber font-bold px-2 py-0.5 rounded-full border border-white/20 shadow-[0_0_10px_#ff003c] z-10 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span> ONLINE
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 对话窗口 (新增) -->
+    <div id="ai-chat-window" class="chat-window chat-hidden fixed bottom-36 right-8 w-80 sm:w-[400px] z-[99] glass-panel neon-border-cyan rounded-2xl overflow-hidden flex flex-col shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+        <!-- 头部 -->
+        <div class="bg-black/90 border-b border-white/10 p-4 flex justify-between items-center relative">
+            <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-neon-cyan to-neon-purple"></div>
+            <div class="flex items-center gap-3">
+                <i data-lucide="bot" class="w-5 h-5 text-neon-cyan"></i>
+                <div>
+                    <h4 class="text-white font-bold tracking-widest text-sm font-cyber">冲电宝_AI_CORE</h4>
+                    <p class="text-neon-cyan text-[10px] tracking-widest">>> 水果宇宙专属接入终端</p>
+                </div>
+            </div>
+            <button id="close-chat" class="text-gray-400 hover:text-neon-pink transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <!-- 消息区 -->
+        <div id="chat-messages" class="p-5 h-72 overflow-y-auto space-y-4 bg-black/60 text-sm hide-scroll backdrop-blur-md">
+            <!-- 初始问候消息 -->
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-full border border-neon-cyan bg-black overflow-hidden flex-shrink-0">
+                    <img src="avatar.jpg" class="w-full h-full object-cover scale-[1.2] translate-y-0.5">
+                </div>
+                <div class="bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan p-3 rounded-2xl rounded-tl-none shadow-[0_0_10px_rgba(0,243,255,0.1)]">
+                    <p class="font-medium">您好！我是水果宇宙主理人兼 AI 助手 冲电宝 ⚡🍊</p>
+                    <p class="mt-2">发现您正在浏览我们的招商协议，有什么关于 <b>IP授权</b> 或 <b>门店加盟</b> 的问题想问我吗？</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 输入区 -->
+        <div class="p-4 bg-black/90 border-t border-white/10 flex gap-3 relative">
+            <input type="text" id="chat-input" placeholder="输入指令..." class="interactive-hover flex-1 bg-transparent border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-neon-cyan focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-medium placeholder-gray-600 text-sm">
+            <button id="send-chat" class="interactive-hover w-10 h-10 bg-neon-cyan text-black rounded-xl flex items-center justify-center hover:shadow-[0_0_15px_#00f3ff] transition-shadow shrink-0">
+                <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 核心脚本 -->
     <script>
+        // --- WebGL Balatro 着色器核心 (Vanilla JS 移植版) ---
+        function initBalatroBackground() {
+            const canvas = document.getElementById('balatro-bg');
+            if (!canvas) return;
+            const gl = canvas.getContext('webgl');
+            if (!gl) return;
+
+            // 颜色转换为 vec4 助手，默认映射到现在的赛博朋克主题
+            const hexToVec4 = (hex) => {
+                let hexStr = hex.replace('#', '');
+                let r = 0, g = 0, b = 0, a = 1;
+                if (hexStr.length === 6) {
+                    r = parseInt(hexStr.slice(0, 2), 16) / 255;
+                    g = parseInt(hexStr.slice(2, 4), 16) / 255;
+                    b = parseInt(hexStr.slice(4, 6), 16) / 255;
+                }
+                return [r, g, b, a];
+            };
+
+            // 参数设定 (结合了您的要求与当前的霓虹主题)
+            const config = {
+                spinRotation: -2.0,
+                spinSpeed: 7.0,
+                offset: [0.0, 0.0],
+                color1: '#ff003c', // 原 #DE443B -> 映射为霓虹粉
+                color2: '#00f3ff', // 原 #006BB4 -> 映射为霓虹青
+                color3: '#1a0524', // 原 #162325 -> 映射为赛博深紫
+                contrast: 3.5,
+                lighting: 0.4,
+                spinAmount: 0.25,
+                pixelFilter: 745.0,
+                spinEase: 1.0,
+                isRotate: false,
+                mouseInteraction: true
+            };
+
+            // 顶点着色器
+            const vsSource = `
+                attribute vec2 position;
+                attribute vec2 uv;
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 0.0, 1.0);
+                }
+            `;
+
+            // 片段着色器 (原汁原味提取)
+            const fsSource = `
+                precision highp float;
+                #define PI 3.14159265359
+                uniform float iTime;
+                uniform vec3 iResolution;
+                uniform float uSpinRotation;
+                uniform float uSpinSpeed;
+                uniform vec2 uOffset;
+                uniform vec4 uColor1;
+                uniform vec4 uColor2;
+                uniform vec4 uColor3;
+                uniform float uContrast;
+                uniform float uLighting;
+                uniform float uSpinAmount;
+                uniform float uPixelFilter;
+                uniform float uSpinEase;
+                uniform bool uIsRotate;
+                uniform vec2 uMouse;
+                varying vec2 vUv;
+                
+                vec4 effect(vec2 screenSize, vec2 screen_coords) {
+                    float pixel_size = length(screenSize.xy) / uPixelFilter;
+                    vec2 uv = (floor(screen_coords.xy * (1.0 / pixel_size)) * pixel_size - 0.5 * screenSize.xy) / length(screenSize.xy) - uOffset;
+                    float uv_len = length(uv);
+                    
+                    float speed = (uSpinRotation * uSpinEase * 0.2);
+                    if(uIsRotate){ speed = iTime * speed; }
+                    speed += 302.2;
+                    
+                    float mouseInfluence = (uMouse.x * 2.0 - 1.0);
+                    speed += mouseInfluence * 0.1;
+                    
+                    float new_pixel_angle = atan(uv.y, uv.x) + speed - uSpinEase * 20.0 * (uSpinAmount * uv_len + (1.0 - uSpinAmount));
+                    vec2 mid = (screenSize.xy / length(screenSize.xy)) / 2.0;
+                    uv = (vec2(uv_len * cos(new_pixel_angle) + mid.x, uv_len * sin(new_pixel_angle) + mid.y) - mid);
+                    
+                    uv *= 30.0;
+                    float baseSpeed = iTime * uSpinSpeed;
+                    speed = baseSpeed + mouseInfluence * 2.0;
+                    vec2 uv2 = vec2(uv.x + uv.y);
+                    
+                    for(int i = 0; i < 5; i++) {
+                        uv2 += sin(max(uv.x, uv.y)) + uv;
+                        uv += 0.5 * vec2(
+                            cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121),
+                            sin(uv2.x - 0.113 * speed)
+                        );
+                        uv -= cos(uv.x + uv.y) - sin(uv.x * 0.711 - uv.y);
+                    }
+                    
+                    float contrast_mod = (0.25 * uContrast + 0.5 * uSpinAmount + 1.2);
+                    float paint_res = min(2.0, max(0.0, length(uv) * 0.035 * contrast_mod));
+                    float c1p = max(0.0, 1.0 - contrast_mod * abs(1.0 - paint_res));
+                    float c2p = max(0.0, 1.0 - contrast_mod * abs(paint_res));
+                    float c3p = 1.0 - min(1.0, c1p + c2p);
+                    float light = (uLighting - 0.2) * max(c1p * 5.0 - 4.0, 0.0) + uLighting * max(c2p * 5.0 - 4.0, 0.0);
+                    
+                    return (0.3 / uContrast) * uColor1 + (1.0 - 0.3 / uContrast) * (uColor1 * c1p + uColor2 * c2p + vec4(c3p * uColor3.rgb, c3p * uColor1.a)) + light;
+                }
+                
+                void main() {
+                    vec2 uv = vUv * iResolution.xy;
+                    gl_FragColor = effect(iResolution.xy, uv);
+                }
+            `;
+
+            // 编译 Shader
+            const compileShader = (type, source) => {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            };
+
+            const vertexShader = compileShader(gl.VERTEX_SHADER, vsSource);
+            const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fsSource);
+
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            // 一个覆盖全屏的大三角形
+            const vertices = new Float32Array([
+                -1.0, -1.0,   0.0, 0.0,
+                 3.0, -1.0,   2.0, 0.0,
+                -1.0,  3.0,   0.0, 2.0
+            ]);
+
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+            const positionLoc = gl.getAttribLocation(program, 'position');
+            gl.enableVertexAttribArray(positionLoc);
+            gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 16, 0);
+
+            const uvLoc = gl.getAttribLocation(program, 'uv');
+            gl.enableVertexAttribArray(uvLoc);
+            gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
+
+            // 注册 Uniforms
+            const getLoc = name => gl.getUniformLocation(program, name);
+            const locs = {
+                iTime: getLoc('iTime'),
+                iResolution: getLoc('iResolution'),
+                uSpinRotation: getLoc('uSpinRotation'),
+                uSpinSpeed: getLoc('uSpinSpeed'),
+                uOffset: getLoc('uOffset'),
+                uColor1: getLoc('uColor1'),
+                uColor2: getLoc('uColor2'),
+                uColor3: getLoc('uColor3'),
+                uContrast: getLoc('uContrast'),
+                uLighting: getLoc('uLighting'),
+                uSpinAmount: getLoc('uSpinAmount'),
+                uPixelFilter: getLoc('uPixelFilter'),
+                uSpinEase: getLoc('uSpinEase'),
+                uIsRotate: getLoc('uIsRotate'),
+                uMouse: getLoc('uMouse')
+            };
+
+            // 设置静态 Uniforms
+            gl.uniform1f(locs.uSpinRotation, config.spinRotation);
+            gl.uniform1f(locs.uSpinSpeed, config.spinSpeed);
+            gl.uniform2f(locs.uOffset, config.offset[0], config.offset[1]);
+            gl.uniform4fv(locs.uColor1, hexToVec4(config.color1));
+            gl.uniform4fv(locs.uColor2, hexToVec4(config.color2));
+            gl.uniform4fv(locs.uColor3, hexToVec4(config.color3));
+            gl.uniform1f(locs.uContrast, config.contrast);
+            gl.uniform1f(locs.uLighting, config.lighting);
+            gl.uniform1f(locs.uSpinAmount, config.spinAmount);
+            gl.uniform1f(locs.uPixelFilter, config.pixelFilter);
+            gl.uniform1f(locs.uSpinEase, config.spinEase);
+            gl.uniform1i(locs.uIsRotate, config.isRotate);
+
+            let targetMouse = [0.5, 0.5];
+
+            // 窗口调整
+            const resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                gl.uniform3f(locs.iResolution, canvas.width, canvas.height, canvas.width / canvas.height);
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            // 鼠标交互
+            if (config.mouseInteraction) {
+                window.addEventListener('mousemove', (e) => {
+                    targetMouse[0] = e.clientX / window.innerWidth;
+                    targetMouse[1] = 1.0 - (e.clientY / window.innerHeight);
+                });
+            }
+
+            // 渲染循环
+            const update = (time) => {
+                gl.uniform1f(locs.iTime, time * 0.001);
+                gl.uniform2f(locs.uMouse, targetMouse[0], targetMouse[1]);
+                gl.drawArrays(gl.TRIANGLES, 0, 3);
+                requestAnimationFrame(update);
+            };
+            requestAnimationFrame(update);
+        }
+        
+        // 启动 WebGL 渲染
+        initBalatroBackground();
+
+        // -------------------------------------------------------------
+        // 原有交互脚本逻辑
+        // -------------------------------------------------------------
+
         // 1. 初始化 Lucide 图标
         lucide.createIcons();
 
@@ -653,21 +961,21 @@
         }
 
         // 4. 原生 Canvas 智能粒子交互背景 (星系连线效果)
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, particles = [];
+        const particleCanvas = document.getElementById('particle-canvas');
+        const pCtx = particleCanvas.getContext('2d');
+        let pWidth, pHeight, particles = [];
         
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+        function resizeParticles() {
+            pWidth = particleCanvas.width = window.innerWidth;
+            pHeight = particleCanvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resize);
-        resize();
+        window.addEventListener('resize', resizeParticles);
+        resizeParticles();
 
         class Particle {
             constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
+                this.x = Math.random() * pWidth;
+                this.y = Math.random() * pHeight;
                 this.size = Math.random() * 2 + 0.5;
                 this.speedX = Math.random() * 0.5 - 0.25;
                 this.speedY = Math.random() * -0.5 - 0.1; // 向上飘动
@@ -678,15 +986,15 @@
                 this.x += this.speedX;
                 this.y += this.speedY;
                 // 边界重置
-                if (this.y < 0) { this.y = height; this.x = Math.random() * width; }
-                if (this.x < 0 || this.x > width) { this.speedX *= -1; }
+                if (this.y < 0) { this.y = pHeight; this.x = Math.random() * pWidth; }
+                if (this.x < 0 || this.x > pWidth) { this.speedX *= -1; }
             }
             draw() {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.baseOpacity;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                pCtx.fillStyle = this.color;
+                pCtx.globalAlpha = this.baseOpacity;
+                pCtx.beginPath();
+                pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                pCtx.fill();
 
                 // 核心交互：计算与鼠标的距离，产生能量连线
                 if(window.innerWidth > 768) {
@@ -695,13 +1003,13 @@
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
                     if (distance < 180) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = this.color;
-                        ctx.globalAlpha = (180 - distance) / 180 * 0.4; // 越近线越亮
-                        ctx.lineWidth = 1;
-                        ctx.moveTo(this.x, this.y);
-                        ctx.lineTo(mouseX, mouseY);
-                        ctx.stroke();
+                        pCtx.beginPath();
+                        pCtx.strokeStyle = this.color;
+                        pCtx.globalAlpha = (180 - distance) / 180 * 0.4; // 越近线越亮
+                        pCtx.lineWidth = 1;
+                        pCtx.moveTo(this.x, this.y);
+                        pCtx.lineTo(mouseX, mouseY);
+                        pCtx.stroke();
                         
                         // 粒子稍微被鼠标排斥
                         this.x -= dx * 0.01;
@@ -713,12 +1021,12 @@
 
         for (let i = 0; i < 80; i++) particles.push(new Particle());
 
-        function animateCanvas() {
-            ctx.clearRect(0, 0, width, height);
+        function animateParticleCanvas() {
+            pCtx.clearRect(0, 0, pWidth, pHeight);
             particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateCanvas);
+            requestAnimationFrame(animateParticleCanvas);
         }
-        animateCanvas();
+        animateParticleCanvas();
 
         // 5. GSAP 高级滚动与交互动画
         gsap.registerPlugin(ScrollTrigger);
@@ -842,11 +1150,9 @@
             const fruitCount = 12; // 生成 12 个漂浮水果节点
             for(let i=0; i<fruitCount; i++) {
                 const fruit = document.createElement('div');
-                // 设定基础样式与交互类名
                 fruit.className = 'absolute text-4xl md:text-5xl pointer-events-auto cursor-none interactive-hover hologram-fruit select-none flex items-center justify-center';
                 fruit.innerText = fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
                 
-                // 随机初始位置
                 fruit.style.left = (Math.random() * 90 + 5) + 'vw';
                 fruit.style.top = (Math.random() * 90 + 5) + 'vh';
                 
@@ -863,7 +1169,6 @@
                     ease: "sine.inOut"
                 });
 
-                // 悬停交互：放大、自旋
                 fruit.addEventListener('mouseenter', () => {
                     gsap.to(fruit, { scale: 1.4, rotation: "+=45", duration: 0.4, ease: "back.out(2)" });
                 });
@@ -871,9 +1176,7 @@
                     gsap.to(fruit, { scale: 1, duration: 0.4, ease: "power2.out" });
                 });
 
-                // 点击交互：数据提取与爆破重组
                 fruit.addEventListener('click', (e) => {
-                    // 1. 生成 +100 DATA 悬浮文字
                     const text = document.createElement('div');
                     text.innerText = "+100 DATA_SYNC";
                     text.className = 'absolute text-neon-pink font-cyber font-bold text-sm pointer-events-none z-[9999] shadow-[0_0_10px_#ff003c] whitespace-nowrap';
@@ -889,7 +1192,6 @@
                         onComplete: () => text.remove()
                     });
 
-                    // 2. 水果自身爆破特效
                     gsap.to(fruit, {
                         scale: 0,
                         opacity: 0,
@@ -897,7 +1199,6 @@
                         duration: 0.4,
                         ease: "back.in(1.5)",
                         onComplete: () => {
-                            // 在全屏随机新位置重生并换个水果
                             fruit.style.left = (Math.random() * 90 + 5) + 'vw';
                             fruit.style.top = (Math.random() * 90 + 5) + 'vh';
                             fruit.innerText = fruitEmojis[Math.floor(Math.random() * fruitEmojis.length)];
@@ -947,7 +1248,6 @@
             cyberForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
-                // UI 切换为 Loading 状态
                 const btnSubmit = document.getElementById('btn-submit');
                 const btnText = document.getElementById('btn-text');
                 const btnLoading = document.getElementById('btn-loading');
@@ -956,7 +1256,6 @@
                 btnText.classList.replace('flex', 'hidden');
                 btnLoading.classList.replace('hidden', 'flex');
 
-                // 1. 获取用户填写的数据
                 const name = document.getElementById('q-name').value;
                 const phone = document.getElementById('q-phone').value;
                 const company = document.getElementById('q-company').value || "未提供";
@@ -968,7 +1267,6 @@
 
                 const modeData = modeDatabase[role];
 
-                // 2. 将数据填充到隐藏的海报 DOM 中
                 document.getElementById('p-name').textContent = name;
                 document.getElementById('p-phone').textContent = phone; 
                 document.getElementById('p-company').textContent = company;
@@ -981,35 +1279,28 @@
                 document.getElementById('p-mode-name').textContent = modeData.name;
                 document.getElementById('p-mode-desc').textContent = modeData.desc;
                 
-                // 填充海报上的标签
                 document.getElementById('p-mode-tags').innerHTML = modeData.tags.map(tag => 
                     `<span class="px-3 py-1 bg-neon-cyan/10 text-neon-cyan font-bold text-sm rounded-sm border border-neon-cyan/50">${tag}</span>`
                 ).join('');
 
-                // 3. 使用 html2canvas 生成图片
                 setTimeout(() => {
                     const posterElement = document.getElementById('poster-card');
                     
                     html2canvas(posterElement, {
-                        scale: 2, // 提高分辨率
+                        scale: 2,
                         useCORS: true, 
-                        backgroundColor: '#050505' // 保持赛博黑背景
+                        backgroundColor: '#050505'
                     }).then(canvas => {
-                        // 生成图片 URL
                         const imgData = canvas.toDataURL('image/png');
-                        
-                        // 触发本地下载
                         const link = document.createElement('a');
                         link.download = `FRUIT_UNIVERSE_PROTOCOL_${name}.png`;
                         link.href = imgData;
                         link.click();
 
-                        // 恢复按钮状态
                         btnSubmit.disabled = false;
                         btnLoading.classList.replace('flex', 'hidden');
                         btnText.classList.replace('hidden', 'flex');
 
-                        // 显示成功面板
                         const successPanel = document.getElementById('form-success');
                         successPanel.classList.remove('hidden');
                         void successPanel.offsetWidth;
@@ -1021,7 +1312,7 @@
                         btnLoading.classList.replace('flex', 'hidden');
                         btnText.classList.replace('hidden', 'flex');
                     });
-                }, 500); // 预留 500ms 保证 DOM 文本渲染完毕
+                }, 500); 
             });
         }
 
@@ -1035,6 +1326,111 @@
                 setTimeout(() => successPanel.classList.add('hidden'), 500);
             }
         }
+
+        // 8. AI 客服助手交互逻辑 (新增)
+        const aiBtn = document.getElementById('ai-assistant-btn');
+        const aiAvatarContainer = document.getElementById('ai-avatar-container');
+        const chatWindow = document.getElementById('ai-chat-window');
+        const closeChatBtn = document.getElementById('close-chat');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat');
+        const chatMessages = document.getElementById('chat-messages');
+
+        let isChatOpen = false;
+
+        // 点击助手头像
+        if (aiBtn) {
+            aiBtn.addEventListener('click', () => {
+                // 1. 触发点击的变异动作动画
+                aiBtn.classList.remove('ai-float');
+                aiAvatarContainer.classList.add('ai-action');
+                
+                setTimeout(() => {
+                    aiAvatarContainer.classList.remove('ai-action');
+                    aiBtn.classList.add('ai-float');
+                }, 500);
+
+                // 2. 切换对话框状态
+                isChatOpen = !isChatOpen;
+                if (isChatOpen) {
+                    chatWindow.classList.remove('chat-hidden');
+                    chatWindow.classList.add('chat-visible');
+                    setTimeout(() => chatInput.focus(), 300);
+                } else {
+                    chatWindow.classList.remove('chat-visible');
+                    chatWindow.classList.add('chat-hidden');
+                }
+            });
+        }
+
+        // 关闭对话框
+        if (closeChatBtn) {
+            closeChatBtn.addEventListener('click', () => {
+                isChatOpen = false;
+                chatWindow.classList.remove('chat-visible');
+                chatWindow.classList.add('chat-hidden');
+            });
+        }
+
+        // 消息发送逻辑
+        function appendMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex gap-3 ' + (isUser ? 'flex-row-reverse' : '');
+            
+            const avatarHtml = isUser 
+                ? '<div class="w-8 h-8 rounded-full bg-neon-purple flex items-center justify-center text-white shrink-0 shadow-[0_0_10px_#b026ff]"><i data-lucide="user" class="w-4 h-4"></i></div>'
+                : '<div class="w-8 h-8 rounded-full border border-neon-cyan bg-black overflow-hidden shrink-0 shadow-[0_0_10px_#00f3ff]"><img src="avatar.jpg" class="w-full h-full object-cover scale-[1.2] translate-y-0.5"></div>';
+                
+            const bubbleClasses = isUser
+                ? 'bg-neon-purple/20 border border-neon-purple/30 text-white p-3 rounded-2xl rounded-tr-none shadow-[0_0_10px_rgba(176,38,255,0.1)]'
+                : 'bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan p-3 rounded-2xl rounded-tl-none shadow-[0_0_10px_rgba(0,243,255,0.1)]';
+
+            msgDiv.innerHTML = `
+                ${avatarHtml}
+                <div class="${bubbleClasses} max-w-[80%]">
+                    <p class="font-medium">${text}</p>
+                </div>
+            `;
+            
+            chatMessages.appendChild(msgDiv);
+            lucide.createIcons(); // 重新渲染图标
+            
+            // 滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleSendChat() {
+            const val = chatInput.value.trim();
+            if(!val) return;
+            
+            // 1. 添加用户消息
+            appendMessage(val, true);
+            chatInput.value = '';
+            
+            // 2. 模拟 AI 回复特效
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'text-neon-cyan text-xs font-cyber tracking-widest animate-pulse ml-11';
+            typingDiv.innerText = '冲电宝_IS_TYPING...';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            setTimeout(() => {
+                typingDiv.remove();
+                // 简单的关键词匹配智能回复
+                let reply = "我已经接收到您的数据请求。如果您想获取详细的投资回报模型，请在页面下方完成【建立终端档案】，招商指挥官会立刻接入。";
+                if(val.includes('IP') || val.includes('形象')) {
+                    reply = "就像我一样！我们的潮酷IP矩阵自带亿级流量基因！结合您当地的资源，绝对能产生降维打击效果！🍊";
+                } else if(val.includes('钱') || val.includes('费用') || val.includes('加盟')) {
+                    reply = "针对不同资源禀赋，我们准备了6大分级协议（从零资产的合伙人到独家代理）。建议您先在页面底部建立档案，我会为您精准测算！";
+                }
+                appendMessage(reply, false);
+            }, 1200);
+        }
+
+        if(sendChatBtn) sendChatBtn.addEventListener('click', handleSendChat);
+        if(chatInput) chatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') handleSendChat();
+        });
     </script>
 </body>
 </html>
