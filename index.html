@@ -1416,13 +1416,65 @@
 
             setTimeout(() => {
                 typingDiv.remove();
-                // 简单的关键词匹配智能回复
-                let reply = "我已经接收到您的数据请求。如果您想获取详细的投资回报模型，请在页面下方完成【建立终端档案】，招商指挥官会立刻接入。";
-                if(val.includes('IP') || val.includes('形象')) {
-                    reply = "就像我一样！我们的潮酷IP矩阵自带亿级流量基因！结合您当地的资源，绝对能产生降维打击效果！🍊";
-                } else if(val.includes('钱') || val.includes('费用') || val.includes('加盟')) {
-                    reply = "针对不同资源禀赋，我们准备了6大分级协议（从零资产的合伙人到独家代理）。建议您先在页面底部建立档案，我会为您精准测算！";
+                
+                // --- 升级版：水果宇宙全产业基因图谱匹配逻辑 ---
+                let reply = "指令已接收。要获取精准的投资回报模型，请在页面下方【建立终端档案】，水果宇宙的招商指挥官及核心大脑会立刻接入。";
+                
+                const input = val.toLowerCase();
+
+                // 1. 核心定位与模式
+                if(input.includes('模式') || input.includes('生态') || input.includes('商业') || input.includes('合作') || input.includes('怎么玩')) {
+                    reply = "我们打造的是独一无二的「三角共创生态」！连接甲方企业需求、AI开发者社区（超级外脑）和我们核心团队（艺术与技术的翻译官）。我们卖的不仅是代码，更是‘带版权的艺术审美 + 定制化AI技术’！⚡🍊";
+                } 
+                // 2. 开发者招募 / DAO 社区
+                else if(input.includes('开发') || input.includes('程序员') || input.includes('社区') || input.includes('入驻') || input.includes('极客') || input.includes('提示词')) {
+                    reply = "欢迎超级个体加入水果宇宙2.0社区！无论你是懂底层微调的极客、提示词工程师还是数据清洗专家，在这里你可以根据甲方的‘水果悬赏’接单组队，不仅赚取实战丰厚报酬，还能跟随IP一起成长！";
                 }
+                // 3. 价格与预算
+                else if(input.includes('钱') || input.includes('费用') || input.includes('预算') || input.includes('报价') || input.includes('多少钱') || input.includes('客单价')) {
+                    reply = "我们提供两种维度赋能：\n1. 轻量级标准定制（10-20万，3-4周交付），基于接口微调并植入IP视觉。\n2. 深度产业重构旗舰版（50-150万+，2-3个月），结合私有数据深度训练专属系统。交付不仅包含AI软件，还赠送特定营销战役中的艺术IP授权哦！";
+                }
+                // 4. 十二产业映射匹配
+                else if(input.includes('零售') || input.includes('消费') || input.includes('美妆') || input.includes('餐饮') || input.includes('快消')) {
+                    reply = "解码成功：为您匹配【001《桃醉》(Peach)】协议！\n我们将为您定制『全域品牌创意营销大脑』，一键生成懂消费者情绪的营销企划与视觉物料，让冰冷的零售变得有温度。";
+                }
+                else if(input.includes('文旅') || input.includes('展览') || input.includes('地产') || input.includes('实体') || input.includes('景区')) {
+                    reply = "解码成功：为您匹配【002《奇异果里的埃德利扎岛》】协议！\n我们将为您打造『空间互动与沉浸式体验中枢』，基于线下客流实时反馈动态改变光影叙事，重塑物理空间探索感。";
+                }
+                else if(input.includes('教育') || input.includes('培训') || input.includes('学习') || input.includes('知识')) {
+                    reply = "解码成功：为您匹配【003《石榴裙下》】协议！\n专属定制『沉浸式个性化数字导师』，生成带有人设和真实情绪张力的AI语伴，彻底颠覆传统的死板教学模式。";
+                }
+                else if(input.includes('企服') || input.includes('saas') || input.includes('数字化') || input.includes('管理') || input.includes('系统')) {
+                    reply = "解码成功：为您匹配【004《杨桃》】协议！\n专属定制『智能信息架构与 UX/UI 引擎』。帮您摆脱丑陋难用的内部系统，生成视觉清晰的2D全球业务地图与高阶数据可视化！";
+                }
+                else if(input.includes('娱乐') || input.includes('影视') || input.includes('传媒') || input.includes('综艺') || input.includes('宣发')) {
+                    reply = "解码成功：为您匹配【005《大夏菠萝》】协议！\n专属定制『多模态内容与宣发重构系统』。AI实时抓取活动高光时刻，自动生成海报物料，成倍提升内容产出效率！";
+                }
+                else if(input.includes('出海') || input.includes('品牌') || input.includes('档案') || input.includes('文化')) {
+                    reply = "解码成功：为您匹配【006《车厘子初见》】协议！\n构建『跨文化数字档案馆与溯源系统』，通过AI深度标签化整理历史作品，让全球用户轻松溯源经典设计，助力高端出海。";
+                }
+                else if(input.includes('电商') || input.includes('本地生活') || input.includes('客服') || input.includes('销售')) {
+                    reply = "解码成功：为您匹配【007《瓜包甜星球》】协议！\n部署『全天候动态转化与客服引擎』，根据实时库存动态调价，并用最具“网感”的话术促成交易闭环！";
+                }
+                else if(input.includes('健康') || input.includes('体育') || input.includes('运动') || input.includes('医疗') || input.includes('养老') || input.includes('残障')) {
+                    reply = "检索到双重协议：\n体育大健康匹配【008《芭乐》】(人群情绪分类与活动地图)；\n医疗康养匹配【011《Lemon的救赎》】(柔性关怀与辅助网络)，用情感计算大模型，让科技成为公共服务中的光！";
+                }
+                else if(input.includes('硬件') || input.includes('物联网') || input.includes('aiot') || input.includes('穿戴') || input.includes('汽车')) {
+                    reply = "解码成功：为您匹配【009《白芯火龙果》】协议！\n植入『边缘计算与行为预警大脑』，提供无感的安全守护与毫秒级精准干预，给予致命一击般的保护。";
+                }
+                else if(input.includes('决策') || input.includes('规划') || input.includes('城市') || input.includes('环境')) {
+                    reply = "解码成功：为您匹配【010《甘蔗微甜》】协议！\n搭建『复杂环境逻辑与推演沙盘』，融合多维数据为您推演最优空间规划方案，提供坚实的数据“定见”。";
+                }
+                else if(input.includes('金融') || input.includes('投资') || input.includes('咨询') || input.includes('研判') || input.includes('情报')) {
+                    reply = "解码成功：为您匹配【012《橙交》】协议！\n为您定制『市场情报挖掘与自动化研判系统』，24小时追踪全球市场动态，“自动生成本周报刊”，助力高效进攻，橙风破浪！";
+                }
+                // 5. 测算与测试
+                else if(input.includes('测试') || input.includes('测算') || input.includes('基因')) {
+                    reply = "快去页面底部的终端，填写您的【企业AI基因档案】吧！系统会为您一键生成专属的高清赛博海报和匹配报告！";
+                }
+
+                // 支持文字分段换行，增加可读性
+                reply = reply.replace(/\n/g, '<br/>');
                 appendMessage(reply, false);
             }, 1200);
         }
